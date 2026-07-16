@@ -7,10 +7,26 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <main class="board">
-        <h1 class="board-title">Play</h1>
-        <p class="board-text">Game setup is coming soon.</p>
-        <a class="link-back" th:href="@{/dart/}">Back to home</a>
-    </main>
+<main class="board">
+    <a class="link-back" th:href="@{/dart/}">Back to home</a>
+
+    <h1 class="board-title">Dart Games</h1>
+
+    <div class="dartboard-icon" aria-hidden="true">
+        <svg viewBox="0 0 100 100" width="120" height="120">
+            <circle cx="50" cy="50" r="46" fill="none" stroke="#1a1a1a" stroke-width="4"/>
+            <circle cx="50" cy="50" r="30" fill="none" stroke="#1a1a1a" stroke-width="4"/>
+            <path d="M50 28 L57 43 L72 50 L57 57 L50 72 L43 57 L28 50 L43 43 Z" fill="#1a1a1a"/>
+        </svg>
+    </div>
+
+    <form class="play-form" th:action="@{/dart/play/start}" method="post">
+        <select class="game-picker" name="gameId" required>
+            <option th:each="game : ${games}" th:value="${game.id}" th:text="${game.name}">Game</option>
+        </select>
+
+        <button type="submit" class="btn-block">Start</button>
+    </form>
+</main>
 </body>
 </html>

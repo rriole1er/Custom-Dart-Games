@@ -39,8 +39,11 @@ MainController {
 	}
 
 	@GetMapping(path = "/play")
-	public String play() {
-		return "play";
+	public String play(Model model) {
+        List<Game> games = gameRepository.findAll();
+
+        model.addAttribute("games", games);
+        return "play";
 	}
 
 	@GetMapping(path = "/players")
