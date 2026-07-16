@@ -1,11 +1,11 @@
 package com.example.customdartgames.repository;
 
 import com.example.customdartgames.model.UserGameStats;
-import org.springframework.data.repository.CrudRepository;
+import com.example.customdartgames.model.UserGameStatsId;
+import org.springframework.data.repository.ListCrudRepository;
 
-// This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
+// This will be AUTO IMPLEMENTED by Spring into a Bean called UserGameStatsRepository
 // CRUD refers Create, Read, Update, Delete
-
-public interface UserGameStatsRepository extends CrudRepository<UserGameStats, Integer> {
+public interface UserGameStatsRepository extends ListCrudRepository<UserGameStats, UserGameStatsId> {
 
 }

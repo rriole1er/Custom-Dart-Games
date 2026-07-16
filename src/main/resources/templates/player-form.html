@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Add player - Custom Dart Games</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <main class="board">
+        <h1 class="board-title">New player</h1>
+        <form class="player-form" th:action="@{/dart/add}" method="post">
+            <input type="text" name="username" placeholder="Player name" required autofocus>
+            <button type="submit" class="btn-oval btn-play">Save</button>
+        </form>
+        <a class="link-back" th:href="@{/dart/players}">Back to players</a>
+    </main>
+</body>
+</html>

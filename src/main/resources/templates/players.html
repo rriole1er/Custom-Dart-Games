@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Players - Custom Dart Games</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="board board-wide">
+    <a class="link-back" th:href="@{/dart/}">Back to home</a>
+
+    <h1 class="board-title">Players</h1>
+
+    <div class="leaderboard" th:if="${!users.isEmpty()}">
+        <article class="player-card" th:each="user : ${users}">
+            <header class="player-card-header">
+                <span class="player-name" th:text="${user.username}">Name</span>
+            </header>
+
+            <p class="player-empty" th:if="${games.isEmpty()}">No games yet.</p>
+
+            <ul class="player-stats" th:unless="${games.isEmpty()}">
+                <li class="stat-row" th:each="game : ${games}"
+                    th:with="stat=${statsByUserAndGame.get(user.id)?.get(game.id)},
+                             isLeader=${stat != null and stat.bestScore != null and stat.bestScore == bestPerGame.get(game.id)}">
+                    <span class="stat-game" th:text="${game.name}">Game</span>
+                    <span class="stat-values">
+                        <span class="stat-badge best" th:classappend="${isLeader} ? ' leader' : ''">
+                            <span th:text="${stat != null and stat.bestScore != null ? stat.bestScore : '—'}">—</span>
+                            <span class="crown" th:if="${isLeader}">&#128081;</span>
+                        </span>
+                        <span class="stat-badge worst" th:text="${stat != null and stat.worstScore != null ? stat.worstScore : '—'}">—</span>
+                    </span>
+                </li>
+            </ul>
+        </article>
+    </div>
+
+    <p class="board-text" th:if="${users.isEmpty()}">No players yet — add one below.</p>
+
+    <div class="board-footer">
+        <a class="btn-fab" th:href="@{/dart/players/new}" title="Add player">+</a>
+    </div>
+</main>
+</body>
+</html>

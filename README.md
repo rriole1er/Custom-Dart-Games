@@ -36,20 +36,21 @@ The app listens on `http://localhost:8080`. Database connection settings are in
 `src/main/resources/application.properties` and match the credentials defined in
 `compose.yaml` — fine for local development, not meant for production use.
 
-## Usage
+## Pages
 
-- `GET /dart/` — home page (Thymeleaf view).
-- `POST /dart/add` — create a user. Example:
+- `GET /dart/` — home page: Play / Players.
+- `GET /dart/play` — placeholder for starting a game (not implemented yet).
+- `GET /dart/players` — scoreboard: one row per player, one best/worst column pair per game type.
+- `GET /dart/players/new` — form to add a player.
+- `POST /dart/add` — creates a player (`username` form param), then redirects to `/dart/players`.
 
-  ```bash
-  curl -X POST "http://localhost:8080/dart/add?username=alice"
-  ```
-
-Tables are created/updated automatically on startup (`spring.jpa.hibernate.ddl-auto=update`).
+Game types (`Cricket`, `501`) are seeded automatically on first startup if the `games`
+table is empty. Tables are created/updated automatically (`spring.jpa.hibernate.ddl-auto=update`).
 
 ## Project structure
 
 - `MainController` — web endpoints (`/dart/...`)
 - `model` — JPA entities: `User`, `Game`, `UserGameStats` (composite key on `user_id` + `game_type_id`), `UserGameStatsId`
 - `repository` — Spring Data repositories: `UserRepository`, `GameRepository`, `UserGameStatsRepository`
-- `resources/templates` — Thymeleaf views
+- `resources/templates` — Thymeleaf views (`home`, `play`, `players`, `player-form`)
+- `resources/static/css` — stylesheet
