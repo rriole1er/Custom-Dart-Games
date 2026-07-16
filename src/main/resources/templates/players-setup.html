@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Select players - Custom Dart Games</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="board">
+    <a class="link-back" th:href="@{/dart/play}">Back to game selection</a>
+
+    <h1 class="board-title">Select players</h1>
+    <span class="board-subtitle" th:text="${game.name}">Game</span>
+
+    <p class="player-count" id="player-count" th:if="${playerNumber != null}">
+        0 / <span th:text="${playerNumber}">4</span> selected
+    </p>
+
+    <form th:action="@{/dart/play/players-setup}" method="post">
+        <input type="hidden" name="gameId" th:value="${game.id}">
+
+        <div class="player-picker" th:if="${!users.isEmpty()}" th:attr="data-max-players=${playerNumber}">
+            <label class="player-chip" th:each="player : ${users}">
+                <input type="checkbox" name="playerIds" th:value="${player.id}">
+                <span th:text="${player.username}">Name</span>
+            </label>
+        </div>
+
+        <p class="board-text" th:if="${users.isEmpty()}">
+            No players yet. <a th:href="@{/dart/players/new}">Add one</a> first.
+        </p>
+
+        <button type="submit" class="btn-block" th:if="${!users.isEmpty()}">Start</button>
+    </form>
+</main>
+<script th:src="@{/js/player-setup.js}" defer></script>
+</body>
+</html>

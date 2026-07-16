@@ -310,6 +310,69 @@ body {
     box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
 }
 
+.board-subtitle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 1.5rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+}
+
+.player-count {
+    margin: 0 0 1rem;
+    font-weight: 700;
+    color: #555;
+}
+
+.player-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.player-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 3px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.player-chip input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--green);
+    cursor: pointer;
+}
+
+.player-chip:has(input:checked) {
+    background: #e3f3e9;
+    border-color: var(--green-dark);
+}
+
+.player-chip:has(input:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.player-chip input:disabled {
+    cursor: not-allowed;
+}
+
 .link-back {
     display: block;
     text-align: center;
@@ -351,6 +414,11 @@ body {
     }
 
     .leaderboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .player-picker {
+        display: grid;
         grid-template-columns: repeat(2, 1fr);
     }
 }
