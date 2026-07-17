@@ -24,7 +24,7 @@ public class CustomDartGamesApplication { // main entry
 				cricket.setName("Cricket");
 				gameRepository.save(cricket);
 
-                Game cricketHonor = new Game();
+				Game cricketHonor = new Game();
 				cricketHonor.setName("Cricket Honneur");
 				gameRepository.save(cricketHonor);
 
@@ -32,86 +32,86 @@ public class CustomDartGamesApplication { // main entry
 				fiveOhOne.setName("501");
 				gameRepository.save(fiveOhOne);
 
-                Game threeOhOne = new Game();
-                threeOhOne.setName("301");
+				Game threeOhOne = new Game();
+				threeOhOne.setName("301");
 				gameRepository.save(threeOhOne);
 
-                Game oneOhOne = new Game();
-                oneOhOne.setName("101");
+				Game oneOhOne = new Game();
+				oneOhOne.setName("101");
 				gameRepository.save(oneOhOne);
 
-                Game scram = new Game();
-                scram.setName("Scram");
+				Game scram = new Game();
+				scram.setName("Scram");
 				gameRepository.save(scram);
 
-                Game scram2 = new Game();
-                scram2.setName("Scram 2vs2");
+				Game scram2 = new Game();
+				scram2.setName("Scram 2vs2");
 				gameRepository.save(scram2);
 
-                Game scram3 = new Game();
-                scram3.setName("Scram 2vs1");
-                gameRepository.save(scram3);
+				Game scram3 = new Game();
+				scram3.setName("Scram 2vs1");
+				gameRepository.save(scram3);
 
-                Game ozone = new Game();
-                ozone.setName("Ozone");
+				Game ozone = new Game();
+				ozone.setName("Ozone");
 				gameRepository.save(ozone);
 
-                Game baseBall = new Game();
-                baseBall.setName("Baseball");
+				Game baseBall = new Game();
+				baseBall.setName("Baseball");
 				gameRepository.save(baseBall);
 
-                Game ballBase = new Game();
-                ballBase.setName("Ballbase");
-                gameRepository.save(ballBase);
+				Game ballBase = new Game();
+				ballBase.setName("Ballbase");
+				gameRepository.save(ballBase);
 
-                Game clock = new Game();
-                clock.setName("Horloge");
-                gameRepository.save(clock);
+				Game clock = new Game();
+				clock.setName("Horloge");
+				gameRepository.save(clock);
 
-                Game fastClock = new Game();
-                fastClock.setName("Horloge Rapide");
-                gameRepository.save(fastClock);
+				Game fastClock = new Game();
+				fastClock.setName("Horloge Rapide");
+				gameRepository.save(fastClock);
 
-                Game geoJura = new Game();
-                geoJura.setName("Geo Jura");
-                gameRepository.save(geoJura);
+				Game geoJura = new Game();
+				geoJura.setName("Geo Jura");
+				gameRepository.save(geoJura);
 
-                Game purpleStain = new Game();
-                purpleStain.setName("Purple Stain");
-                gameRepository.save(purpleStain);
+				Game purpleStain = new Game();
+				purpleStain.setName("Purple Stain");
+				gameRepository.save(purpleStain);
 
-                Game killer = new Game();
-                killer.setName("Killer");
-                gameRepository.save(killer);
-            }
+				Game killer = new Game();
+				killer.setName("Killer");
+				gameRepository.save(killer);
+			}
 		};
 	}
 
-    @Bean
-    CommandLineRunner seedPlater(UserRepository userRepository) {
-        return args -> {
-            if(userRepository.count() == 0) {
-                User user = new User();
-                user.setUsername("Remy");
-                userRepository.save(user);
+	@Bean
+	CommandLineRunner seedPlater(UserRepository userRepository) {
+		return args -> {
+			if (userRepository.count() == 0) {
+				User user = new User();
+				user.setUsername("Remy");
+				userRepository.save(user);
 
-                User user2 = new User();
-                user2.setUsername("Armand");
-                userRepository.save(user2);
+				User user2 = new User();
+				user2.setUsername("Armand");
+				userRepository.save(user2);
 
-                User user3 = new User();
-                user3.setUsername("Romain");
-                userRepository.save(user3);
+				User user3 = new User();
+				user3.setUsername("Romain");
+				userRepository.save(user3);
 
-                User user4 = new User();
-                user4.setUsername("Tristan");
-                userRepository.save(user4);
+				User user4 = new User();
+				user4.setUsername("Tristan");
+				userRepository.save(user4);
 
-                User user5 = new User();
-                user5.setUsername("Gaïan");
-                userRepository.save(user5);
-            }
-        };
-    }
+				User user5 = new User();
+				user5.setUsername("Gaïan");
+				userRepository.save(user5);
+			}
+		};
+	}
 
 }
