@@ -17,6 +17,10 @@
     box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 /* Mobile-first base: small screens by default, larger screens enhanced via min-width media queries below. */
 
 body {
@@ -25,6 +29,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     padding: 1.25rem 0.75rem;
     font-family: 'Segoe UI', Arial, system-ui, sans-serif;
     color: var(--ink);
@@ -359,6 +364,25 @@ body {
     cursor: pointer;
 }
 
+.chip-order {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    margin-left: auto;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 800;
+    font-size: 0.8rem;
+}
+
+.chip-order:not(:empty) {
+    display: inline-flex;
+}
+
 .player-chip:has(input:checked) {
     background: #e3f3e9;
     border-color: var(--green-dark);
@@ -386,10 +410,356 @@ body {
     text-decoration: underline;
 }
 
+.link-back.on-dark {
+    color: #9aa5a0;
+}
+
+.link-back.on-dark:hover {
+    color: #fff;
+}
+
+.link-back-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 0.75rem;
+    border: 3px solid var(--border);
+    border-radius: 50%;
+    background: var(--card-bg);
+    color: var(--ink);
+    font-size: 1.3rem;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.link-back-icon:hover {
+    background: #ece5d4;
+}
+
+.link-back-icon.on-dark {
+    background: #262b33;
+    color: #fff;
+}
+
+.link-back-icon.on-dark:hover {
+    background: #333944;
+}
+
+/* Turn-based scoring screen (countdown games: 501/301/101). */
+
+.game-screen {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.game-title {
+    margin: 0;
+    text-align: center;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 800;
+    font-size: 1.4rem;
+}
+
+.players-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.player-panel {
+    background: #20242c;
+    border: 3px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.player-panel.active {
+    opacity: 1;
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px var(--green) inset;
+}
+
+.player-panel.winner {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold) inset;
+}
+
+.player-panel.bust-flash {
+    border-color: var(--red);
+    box-shadow: 0 0 0 2px var(--red) inset;
+}
+
+.player-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.75rem;
+    color: #9aa5a0;
+    margin-bottom: 0.35rem;
+}
+
+.player-panel .player-name {
+    font-size: 0.9rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.player-score {
+    text-align: center;
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    margin: 0.25rem 0;
+}
+
+.player-progress {
+    height: 6px;
+    background: #0d0f12;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.player-progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--green), #3fd6c4);
+    transition: width 0.25s ease;
+}
+
+.checkout-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
+}
+
+.checkout-combo {
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.checkout-refresh {
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.1rem;
+    cursor: pointer;
+}
+
+.keypad-panel {
+    background: #1a1d23;
+    border: 3px solid var(--border);
+    border-radius: 12px;
+    padding: 0.85rem;
+}
+
+.keypad-toolbar {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.3rem;
+}
+
+.keypad-toolbar-spacer {
+    width: 44px;
+    height: 44px;
+}
+
+.keypad-display {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+}
+
+.keypad-mode-toggle {
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--border);
+    border-radius: 50%;
+    background: #262b33;
+    color: #fff;
+    font-size: 1.3rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.keypad-breakdown {
+    min-height: 1rem;
+    margin: 0 0 0.6rem;
+    text-align: center;
+    color: #9aa5a0;
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.keypad-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.keypad-zero-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.keypad-btn {
+    min-height: 52px;
+    border: 3px solid var(--border);
+    border-radius: 8px;
+    background: #262b33;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.keypad-btn:active {
+    transform: translateY(1px);
+}
+
+.keypad-btn-segment {
+    min-height: 44px;
+    font-size: 1rem;
+}
+
+.keypad-btn-erase {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.keypad-btn-muted {
+    font-size: 0.85rem;
+}
+
+.keypad-btn-danger {
+    background: linear-gradient(180deg, var(--red) 0%, var(--red-dark) 100%);
+}
+
+.keypad-btn-primary {
+    background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
+    text-transform: uppercase;
+    font-size: 1.05rem;
+}
+
+.link-undo {
+    display: block;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.4rem;
+    border: none;
+    background: none;
+    color: #9aa5a0;
+    text-decoration: underline;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.link-undo:hover {
+    color: #fff;
+}
+
+.game-over-overlay {
+    background: #182a20;
+    border: 4px solid var(--gold);
+    border-radius: 14px;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    color: #fff;
+}
+
+.game-over-overlay h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.4rem;
+}
+
+.game-over-overlay p {
+    color: #cfd8d2;
+    margin-bottom: 1rem;
+}
+
+.game-over-overlay .btn-block {
+    margin-bottom: 0.75rem;
+}
+
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 10;
+}
+
+.confirm-box {
+    width: 100%;
+    max-width: 360px;
+    background: #182a20;
+    border: 4px solid var(--red);
+    border-radius: 14px;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    color: #fff;
+}
+
+.confirm-box h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+}
+
+.confirm-box p {
+    color: #cfd8d2;
+    margin-bottom: 1.25rem;
+}
+
+.confirm-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */
 @media (min-width: 600px) {
     body {
-        justify-content: center;
         padding: 2rem 1rem;
     }
 
@@ -420,5 +790,18 @@ body {
     .player-picker {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .game-screen {
+        max-width: 520px;
+    }
+
+    .player-score {
+        font-size: 3.25rem;
+    }
+
+    .keypad-btn {
+        min-height: 60px;
+        font-size: 1.3rem;
     }
 }

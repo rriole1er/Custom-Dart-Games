@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${game.name} + ' - Custom Dart Games'">Game - Custom Dart Games</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="game-screen">
+    <a class="link-back-icon on-dark" data-role="back-link" th:href="@{/dart/play}" title="Retour à la sélection du jeu"
+       aria-label="Retour à la sélection du jeu">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H5M11 18l-6-6 6-6"/>
+        </svg>
+    </a>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+
+    <div class="players-stack" id="players-stack">
+        <section class="player-panel" th:each="player, iter : ${players}"
+                 th:classappend="${iter.index == 0} ? ' active' : ''"
+                 th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
+            <div class="player-panel-header">
+                <span data-role="turns">Tours : 0</span>
+                <span class="player-name" th:text="${player.username}">Name</span>
+                <span data-role="avg">Moy : 0.0</span>
+            </div>
+
+            <div class="player-score" data-role="score" th:text="${startingScore}">501</div>
+
+            <div class="checkout-hint" data-role="checkout" hidden>
+                <span class="checkout-combo" data-role="checkout-combo"></span>
+                <button type="button" class="checkout-refresh" data-role="checkout-refresh" title="Autre combinaison">
+                    &#8635;
+                </button>
+            </div>
+
+            <div class="player-progress">
+                <div class="player-progress-bar" data-role="progress"></div>
+            </div>
+        </section>
+    </div>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+
+    <div class="keypad-panel" id="keypad-panel">
+        <div class="keypad-toolbar">
+            <span class="keypad-toolbar-spacer" aria-hidden="true"></span>
+            <div class="keypad-display" data-role="input-display">0</div>
+            <button type="button" class="keypad-mode-toggle" data-action="toggle-mode" title="Basculer le clavier">
+                &#9678;
+            </button>
+        </div>
+        <p class="keypad-breakdown" data-role="segment-breakdown"></p>
+
+        <!----------------------------    CLASSIC PAD OVERLAY  ------------------------------------------>
+
+        <div class="keypad" data-role="keypad-total">
+            <button type="button" class="keypad-btn" data-digit="1">1</button>
+            <button type="button" class="keypad-btn" data-digit="2">2</button>
+            <button type="button" class="keypad-btn" data-digit="3">3</button>
+            <button type="button" class="keypad-btn" data-digit="4">4</button>
+            <button type="button" class="keypad-btn" data-digit="5">5</button>
+            <button type="button" class="keypad-btn" data-digit="6">6</button>
+            <button type="button" class="keypad-btn" data-digit="7">7</button>
+            <button type="button" class="keypad-btn" data-digit="8">8</button>
+            <button type="button" class="keypad-btn" data-digit="9">9</button>
+        </div>
+
+        <div class="keypad-zero-row" data-role="keypad-zero-row">
+            <button type="button" class="keypad-btn" data-digit="0">0</button>
+            <button type="button" class="keypad-btn keypad-btn-muted" data-action="clear" title="Effacer">&#9003;
+            </button>
+        </div>
+
+        <!----------------------------    CLASSIC PAD OVERLAY  ------------------------------------------>
+
+
+        <!----------------------------    SEGMENT PAD OVERLAY  ------------------------------------------>
+
+        <div class="keypad keypad-segments" data-role="keypad-segments" hidden>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="1">1</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="2">2</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="3">3</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="4">4</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="5">5</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="6">6</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="7">7</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="8">8</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="9">9</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="10">10</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="11">11</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="12">12</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="13">13</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="14">14</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="15">15</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="16">16</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="17">17</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="18">18</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="19">19</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="20">20</button>
+            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="25">25</button>
+        </div>
+
+        <button type="button" class="keypad-btn keypad-btn-muted keypad-btn-erase" data-role="keypad-segment-erase"
+                data-action="clear" hidden title="Effacer">&#9003;
+        </button>
+
+        <!----------------------------    SEGMENT PAD OVERLAY  ------------------------------------------>
+
+
+        <div class="keypad-actions">
+            <button type="button" class="keypad-btn keypad-btn-danger" data-action="undo">ANNULER</button>
+            <button type="button" class="keypad-btn keypad-btn-primary" data-action="done">Terminer</button>
+        </div>
+    </div>
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+    <div class="game-over-overlay" data-role="game-over" hidden>
+        <h2>&#127942; <span data-role="winner-name"></span> gagne !</h2>
+        <p data-role="winner-turns"></p>
+
+        <form method="post" th:action="@{/dart/play/finish}">
+            <input type="hidden" name="gameId" th:value="${game.id}">
+            <input type="hidden" name="userId" data-role="winner-input">
+            <input type="hidden" name="turns" data-role="turns-input">
+            <button type="submit" class="btn-block">Enregistrer le résultat</button>
+        </form>
+    </div>
+
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+    <div class="confirm-overlay" data-role="exit-confirm" hidden>
+        <div class="confirm-box">
+            <h2>Quitter la partie ?</h2>
+            <p>La progression de cette partie sera perdue.</p>
+            <div class="confirm-actions">
+                <button type="button" class="keypad-btn keypad-btn-muted" data-action="exit-cancel">Annuler</button>
+                <button type="button" class="keypad-btn keypad-btn-danger" data-action="exit-confirm">Quitter</button>
+            </div>
+        </div>
+    </div>
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+</main>
+<script th:src="@{/js/game-countdown.js}" defer></script>
+</body>
+</html>

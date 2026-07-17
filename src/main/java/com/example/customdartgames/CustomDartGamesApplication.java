@@ -24,9 +24,9 @@ public class CustomDartGamesApplication { // main entry
 				cricket.setName("Cricket");
 				gameRepository.save(cricket);
 
-                Game cricketHonnor = new Game();
-				cricketHonnor.setName("Cricket Honneur");
-				gameRepository.save(cricketHonnor);
+                Game cricketHonor = new Game();
+				cricketHonor.setName("Cricket Honneur");
+				gameRepository.save(cricketHonor);
 
 				Game fiveOhOne = new Game();
 				fiveOhOne.setName("501");
