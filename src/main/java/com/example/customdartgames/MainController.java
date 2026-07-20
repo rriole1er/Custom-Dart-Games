@@ -56,27 +56,41 @@ public class MainController {
 		return "home";
 	}
 
+	@GetMapping(path = "/rules")
+	public String rules(Model model) {
+		model.addAttribute("games", gameRepository.findAll());
+		return "rules";
+	}
+
 	@GetMapping(path = "/players")
 	public String players(Model model) { // model is the spring mvc's way to pass data from controller to view.
 		List<Game> games = gameRepository.findAll();
 		List<User> users = userRepository.findAll();
-		List<UserGameStats> stats = userGameStatsRepository.findAll();
+		List<UserGameStats> stats = userGameStatsRepository.findAllWithUserAndGame();
 
 		Map<Integer, Map<Integer, UserGameStats>> statsByUserAndGame = new HashMap<>(); // (User id,(Game id,
 																						// UserGameStats)
-		Map<Integer, Integer> bestPerGame = new HashMap<>(); // GameId
+		Map<Integer, Integer> bestPerGame = new HashMap<>(); // Game id, bestScore
 
 		for (UserGameStats stat : stats) {
-			statsByUserAndGame.computeIfAbsent(stat.getUser().getId(), id -> new HashMap<>()) // create a map with
-																								// UserId, (GameId,
-																								// UserGameStats score)
-					.put(stat.getGame().getId(), stat); // populate
+
+			Game game = stat.getGame();
+			// create a map with UserId, (GameId,UserGameStats score)
+			statsByUserAndGame.computeIfAbsent(stat.getUser().getId(), id -> new HashMap<>()).put(game.getId(), stat); // populate
 
 			Integer bestScore = stat.getBestScore(); // In every game, look for the best score registered
 			if (bestScore != null) {
-				Integer gameId = stat.getGame().getId();
+				Integer gameId = game.getId();
 				Integer currentBest = bestPerGame.get(gameId);
-				if (currentBest == null || bestScore > currentBest) {
+				boolean isBasedOnTurnGame = game.isScoreBasedOnTurn();
+
+				// If it's not a turn based game, store the highest score
+				if (currentBest == null || ((bestScore > currentBest) && !isBasedOnTurnGame)) {
+					bestPerGame.put(gameId, bestScore);
+				}
+
+				// If it's a turn based game, store the lowest turns number
+				else if ((bestScore < currentBest) && isBasedOnTurnGame) {
 					bestPerGame.put(gameId, bestScore);
 				}
 			}
@@ -188,12 +202,29 @@ public class MainController {
 			userGameStats.setGame(gameRepository.findById(gameId).orElseThrow());
 			userGameStats.setBestScore(turns);
 			userGameStatsRepository.save(userGameStats);
-		} else { // else fetch the current best score and compare the best one
+		} else {
+			// else fetch the current best score and compare the best one
 			userGameStatsRepository.findById(userGameStatsId).ifPresent(userGameStats -> {
-				if (userGameStats.getBestScore() > turns) {
-					userGameStats.setBestScore(turns);
-					userGameStatsRepository.save(userGameStats);
+
+				if (userGameStats.getBestScore() > turns) { // Best 12 > New best 7
+
+					if ((userGameStats.getWorstScore() == null)// Best 12 > Worst 11 or null
+							|| (userGameStats.getBestScore() > userGameStats.getWorstScore())) {
+
+						userGameStats.setWorstScore(userGameStats.getBestScore()); // register worst 12
+					}
+					userGameStats.setBestScore(turns); // register new best 7
 				}
+
+				else { // Else, the new best score isn't better than the best score
+						// New score 22 > Worst 11 or null
+					if ((userGameStats.getWorstScore() == null) || (turns > userGameStats.getWorstScore())) {
+						// Update the worst score
+						userGameStats.setWorstScore(turns); // register worst 22
+					}
+				}
+				// Save data
+				userGameStatsRepository.save(userGameStats);
 			});
 		}
 

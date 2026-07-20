@@ -10,6 +10,10 @@
     --green-dark: #145a32;
     --gold: #d4a017;
     --gold-dark: #a97c0f;
+    --blue: #2a6f97;
+    --blue-dark: #1c4f6e;
+    --purple: #6a4c93;
+    --purple-dark: #4a3468;
     --border: #111111;
 }
 
@@ -119,6 +123,10 @@ body {
 
 .btn-players {
     background: linear-gradient(180deg, var(--red) 0%, var(--red-dark) 100%);
+}
+
+.btn-rules {
+    background: linear-gradient(180deg, var(--blue) 0%, var(--blue-dark) 100%);
 }
 
 /* Leaderboard: stacked player cards so any number of games stays readable without side-scrolling. */
@@ -441,6 +449,96 @@ body {
 .link-back-icon.on-dark {
     background: #262b33;
     color: #fff;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.page-header .link-back-icon,
+.page-header .icon-btn {
+    margin-bottom: 0;
+}
+
+.icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--border);
+    border-radius: 50%;
+    background: var(--card-bg);
+    color: var(--ink);
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.icon-btn:hover {
+    background: #ece5d4;
+}
+
+.rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.rules-item {
+    border: 3px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    overflow: hidden;
+}
+
+.rules-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+    background: var(--card-bg);
+}
+
+.rules-item summary:hover {
+    background: #f3f3f3;
+}
+
+.rules-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.rules-item summary::after {
+    content: '\25B8';
+    color: #777;
+    transition: transform 0.15s ease;
+}
+
+.rules-item[open] summary::after {
+    transform: rotate(90deg);
+}
+
+.rules-item[open] summary {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.rules-text {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    color: #333;
+    font-size: 0.95rem;
+    white-space: pre-line;
 }
 
 .link-back-icon.on-dark:hover {
