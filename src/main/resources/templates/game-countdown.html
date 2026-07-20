@@ -125,7 +125,7 @@
         <h2>&#127942; <span data-role="winner-name"></span> gagne !</h2>
         <p data-role="winner-turns"></p>
 
-        <form method="post" th:action="@{/dart/play/finish-countdown}">
+        <form method="post" th:action="@{/dart/play/finish}">
             <input type="hidden" name="gameId" th:value="${game.id}">
             <input type="hidden" name="userId" data-role="winner-input">
             <input type="hidden" name="turns" data-role="turns-input">
@@ -153,6 +153,7 @@
     <!----------------------------    EXIT OVERLAY  ----------------------------------------->
 
 </main>
+<script th:src="@{/js/game-common.js}" defer></script>
 <script th:src="@{/js/game-countdown.js}" defer></script>
 </body>
 </html>

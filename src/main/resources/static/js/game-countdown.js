@@ -1,3 +1,5 @@
+// Countdown (501/301/101) game screen: dual keypad (raw total vs. per-dart
+// segment entry), checkout suggestions, and a per-turn undo stack.
 document.addEventListener('DOMContentLoaded', function () {
     var panels = Array.prototype.slice.call(document.querySelectorAll('.player-panel'));
     if (!panels.length) {
@@ -5,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var keypadPanel = document.getElementById('keypad-panel');
+    var backLink = document.querySelector('[data-role="back-link"]');
     var gameOverOverlay = document.querySelector('[data-role="game-over"]');
     var inputDisplay = document.querySelector('[data-role="input-display"]');
     var breakdownDisplay = document.querySelector('[data-role="segment-breakdown"]');
@@ -14,12 +17,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var keypadSegmentErase = document.querySelector('[data-role="keypad-segment-erase"]');
 
     var players = panels.map(function (panel) {
+        var startingScore = parseInt(panel.querySelector('[data-role="score"]').textContent, 10);
         return {
             panel: panel,
             id: panel.dataset.playerId,
             name: panel.dataset.playerName,
-            startingScore: parseInt(panel.querySelector('[data-role="score"]').textContent, 10),
-            remaining: parseInt(panel.querySelector('[data-role="score"]').textContent, 10),
+            startingScore: startingScore,
+            remaining: startingScore,
             turns: 0,
             totalScored: 0,
             checkoutVariant: 0
@@ -30,16 +34,25 @@ document.addEventListener('DOMContentLoaded', function () {
     var buffer = '';
     var mode = 'total';
     var segmentTaps = [];
-    var history = [];
     var gameOver = false;
 
-    // Segments usable before the final dart of a checkout (triples, singles, single/double bull).
+    // Undo model (mirrors game-cricket-common.js): `history` is a stack of one
+    // snapshot per committed turn, so Annuler can walk back arbitrarily far
+    // through the game. Unlike Cricket, a turn's input lives in a separate
+    // buffer (`buffer`/`segmentTaps`) until "Terminer" applies it, so undo
+    // never needs to snapshot mid-turn state — resetInput() simply discards
+    // whatever hasn't been committed yet.
+    var history = [];
+
+    // Segments usable before the final dart of a checkout: triples then singles,
+    // sorted highest-value first so findFinish() tries the biggest scores first
+    // (a greedy search, not an exhaustive one — see its comment below).
     var LEAD_SEGMENTS = [];
-    for (var t = 20; t >= 1; t--) {
-        LEAD_SEGMENTS.push({label: 'T' + t, value: t * 3});
+    for (var triple = 20; triple >= 1; triple--) {
+        LEAD_SEGMENTS.push({label: 'T' + triple, value: triple * 3});
     }
-    for (var s = 20; s >= 1; s--) {
-        LEAD_SEGMENTS.push({label: s.toString(), value: s});
+    for (var single = 20; single >= 1; single--) {
+        LEAD_SEGMENTS.push({label: single.toString(), value: single});
     }
     LEAD_SEGMENTS.push({label: '25', value: 25});
     LEAD_SEGMENTS.push({label: 'BULL', value: 50});
@@ -47,6 +60,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return b.value - a.value;
     });
 
+    // Recursively searches for a legal N-dart finish: every dart before the
+    // last must leave enough remaining for a real double-out (checked by the
+    // dartsLeft === 1 base case, which only accepts an exact double or BULL).
+    // Greedy, not exhaustive — it takes the first working combination in
+    // LEAD_SEGMENTS order, which is highest score first. `skipFirstLabel` lets
+    // computeCheckout() ask for a different route past the same first dart,
+    // powering the refresh button's "other combination" option.
     function findFinish(remaining, dartsLeft, skipFirstLabel) {
         if (dartsLeft === 1) {
             if (remaining === 50) {
@@ -74,6 +94,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
+    // Suggests a checkout using as few darts as possible (1, then 2, then 3).
+    // An odd `variant` asks findFinish() to skip whatever it used as its first
+    // dart last time, so clicking the refresh button alternates between two
+    // different routes to the same score instead of repeating one forever.
     function computeCheckout(remaining, variant) {
         if (remaining < 2 || remaining > 170) {
             return null;
@@ -142,6 +166,16 @@ document.addEventListener('DOMContentLoaded', function () {
         updateDisplay();
     }
 
+    // Swaps which keypad is visible (shared by the mode toggle button and by
+    // "Terminer" auto-returning to the total pad after a segment-mode turn).
+    function setMode(newMode) {
+        mode = newMode;
+        keypadTotal.hidden = mode !== 'total';
+        keypadZeroRow.hidden = mode !== 'total';
+        keypadSegments.hidden = mode !== 'segment';
+        keypadSegmentErase.hidden = mode !== 'segment';
+    }
+
     function flashBust(player) {
         player.panel.classList.add('bust-flash');
         setTimeout(function () {
@@ -174,6 +208,8 @@ document.addEventListener('DOMContentLoaded', function () {
             totalScored: player.totalScored
         };
 
+        // Busts if the turn would go negative, or land on 1 (no double left to
+        // finish on) — either way the turn counts but the score doesn't.
         var newRemaining = player.remaining - scored;
         var busted = scored > 0 && (newRemaining < 0 || newRemaining === 1);
 
@@ -222,11 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (gameOver) {
             return;
         }
-        mode = mode === 'total' ? 'segment' : 'total';
-        keypadTotal.hidden = mode !== 'total';
-        keypadZeroRow.hidden = mode !== 'total';
-        keypadSegments.hidden = mode !== 'segment';
-        keypadSegmentErase.hidden = mode !== 'segment';
+        setMode(mode === 'total' ? 'segment' : 'total');
         resetInput();
     });
 
@@ -247,11 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
             scored = segmentTaps.reduce(function (a, b) {
                 return a + b;
             }, 0);
-            mode = 'total';
-            keypadTotal.hidden = mode !== 'total';
-            keypadZeroRow.hidden = mode !== 'total';
-            keypadSegments.hidden = mode !== 'segment';
-            keypadSegmentErase.hidden = mode !== 'segment';
+            setMode('total');
         } else {
             scored = buffer === '' ? 0 : parseInt(buffer, 10);
             if (scored > 180) {
@@ -283,26 +311,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         renderAll();
     });
-
-    var backLink = document.querySelector('[data-role="back-link"]');
-    var exitConfirmOverlay = document.querySelector('[data-role="exit-confirm"]');
-    if (backLink && exitConfirmOverlay) {
-        backLink.addEventListener('click', function (e) {
-            if (gameOver) {
-                return;
-            }
-            e.preventDefault();
-            exitConfirmOverlay.hidden = false;
-        });
-
-        exitConfirmOverlay.querySelector('[data-action="exit-cancel"]').addEventListener('click', function () {
-            exitConfirmOverlay.hidden = true;
-        });
-
-        exitConfirmOverlay.querySelector('[data-action="exit-confirm"]').addEventListener('click', function () {
-            window.location.href = backLink.href;
-        });
-    }
 
     panels.forEach(function (panel, index) {
         var refreshBtn = panel.querySelector('[data-role="checkout-refresh"]');

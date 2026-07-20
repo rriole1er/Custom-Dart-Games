@@ -1,3 +1,4 @@
+<!--Build: 7E4D1F7C-->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -23,6 +24,10 @@
         <input type="hidden" name="gameId" th:value="${game.id}">
         <input type="hidden" name="orderedPlayerIds" id="ordered-player-ids">
 
+        <!----------------------------    PLAYER PICKER OVERLAY  ------------------------------------------>
+
+        <!-- data-max-players (optional, blank if playerNumber is null) drives the
+             selection cap in player-setup.js; chip-order badges show click order. -->
         <div class="player-picker" th:if="${!users.isEmpty()}" th:attr="data-max-players=${playerNumber}">
             <label class="player-chip" th:each="player : ${users}">
                 <input type="checkbox" th:value="${player.id}">
@@ -30,6 +35,8 @@
                 <span class="chip-order" data-role="chip-order"></span>
             </label>
         </div>
+
+        <!----------------------------    PLAYER PICKER OVERLAY  ------------------------------------------>
 
         <p class="board-text" th:if="${users.isEmpty()}">
             No players yet. <a th:href="@{/dart/players/new}">Add one</a> first.

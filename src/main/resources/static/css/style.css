@@ -1,3 +1,6 @@
+/* Build: 7E4D1F7C */
+@import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Oswald:wght@400;500;600;700&display=swap');
+
 :root {
     --bg-dark: #06130c;
     --bg-glow: #123524;
@@ -10,11 +13,13 @@
     --green-dark: #145a32;
     --gold: #d4a017;
     --gold-dark: #a97c0f;
-    --blue: #2a6f97;
-    --blue-dark: #1c4f6e;
-    --purple: #6a4c93;
-    --purple-dark: #4a3468;
+    --wood: #8a5a34;
+    --wood-dark: #5c3b22;
     --border: #111111;
+    /* Display: bold condensed scoreboard voice, used only for titles, buttons,
+       and numbers. Body: everything else (paragraphs, names, form fields). */
+    --font-display: 'Oswald', 'Arial Narrow', Arial, sans-serif;
+    --font-body: 'Karla', 'Segoe UI', Arial, sans-serif;
 }
 
 * {
@@ -35,7 +40,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 1.25rem 0.75rem;
-    font-family: 'Segoe UI', Arial, system-ui, sans-serif;
+    font-family: var(--font-body);
     color: var(--ink);
     background:
         repeating-radial-gradient(circle at center, transparent 0, transparent 60px, rgba(255, 255, 255, 0.03) 62px, transparent 64px),
@@ -61,9 +66,10 @@ body {
 .board-title {
     margin: 0 0 1.5rem;
     text-align: center;
-    font-size: 1.75rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
@@ -96,10 +102,11 @@ body {
     padding: 0.9rem 1.5rem;
     border: 4px solid var(--border);
     border-radius: 999px;
-    font-size: 1.05rem;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     text-decoration: none;
     color: #fff;
     cursor: pointer;
@@ -126,7 +133,7 @@ body {
 }
 
 .btn-rules {
-    background: linear-gradient(180deg, var(--blue) 0%, var(--blue-dark) 100%);
+    background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
 }
 
 /* Leaderboard: stacked player cards so any number of games stays readable without side-scrolling. */
@@ -204,9 +211,10 @@ body {
     justify-content: center;
     padding: 0.2rem 0.5rem;
     border-radius: 999px;
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: 0.95rem;
 }
 
 .stat-badge.best {
@@ -238,8 +246,9 @@ body {
     border-radius: 999px;
     background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
     color: var(--ink);
+    font-family: var(--font-display);
     font-size: 1.4rem;
-    font-weight: 800;
+    font-weight: 700;
     text-decoration: none;
     box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
     transition: transform 0.15s ease;
@@ -288,8 +297,9 @@ body {
     border-radius: 8px;
     background: var(--card-bg);
     color: var(--ink);
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
     text-align: center;
     appearance: none;
     -webkit-appearance: none;
@@ -304,10 +314,11 @@ body {
     border-radius: 8px;
     background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
     color: #fff;
-    font-size: 1.2rem;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     cursor: pointer;
     box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -332,10 +343,11 @@ body {
     border-radius: 999px;
     background: var(--gold);
     color: var(--ink);
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.04em;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
 }
 
 .player-count {
@@ -383,8 +395,9 @@ body {
     border-radius: 999px;
     background: var(--gold);
     color: var(--ink);
-    font-weight: 800;
-    font-size: 0.8rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
 }
 
 .chip-order:not(:empty) {
@@ -559,10 +572,11 @@ body {
     margin: 0;
     text-align: center;
     color: #fff;
+    font-family: var(--font-display);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 800;
-    font-size: 1.4rem;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    font-size: 1.5rem;
 }
 
 .players-stack {
@@ -606,7 +620,9 @@ body {
 }
 
 .player-panel .player-name {
-    font-size: 0.9rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 500;
     color: #fff;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -614,8 +630,9 @@ body {
 
 .player-score {
     text-align: center;
-    font-size: 2.75rem;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 600;
     line-height: 1;
     color: #fff;
     font-variant-numeric: tabular-nums;
@@ -649,10 +666,11 @@ body {
 }
 
 .checkout-combo {
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: #fff;
 }
 
@@ -688,8 +706,9 @@ body {
 
 .keypad-display {
     text-align: center;
-    font-size: 1.6rem;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 600;
     color: #fff;
     font-variant-numeric: tabular-nums;
 }
@@ -744,8 +763,9 @@ body {
     border-radius: 8px;
     background: #262b33;
     color: #fff;
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -805,7 +825,9 @@ body {
 
 .game-over-overlay h2 {
     margin: 0 0 0.5rem;
-    font-size: 1.4rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.5rem;
 }
 
 .game-over-overlay p {
@@ -841,7 +863,9 @@ body {
 
 .confirm-box h2 {
     margin: 0 0 0.5rem;
-    font-size: 1.2rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.3rem;
 }
 
 .confirm-box p {
@@ -853,6 +877,103 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
+}
+
+/* Cricket board: one focused player panel at a time, others collapsed to a closed/open dot strip. */
+
+.player-panel.cricket-panel {
+    cursor: pointer;
+}
+
+.player-panel.cricket-panel.active:not(.focused) {
+    opacity: 0.6;
+}
+
+.player-panel.cricket-panel.focused {
+    opacity: 1;
+    cursor: default;
+}
+
+.cricket-grid {
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+    margin-top: 0.75rem;
+}
+
+.cricket-panel.focused .cricket-grid {
+    display: grid;
+}
+
+.cricket-panel.focused .cricket-closed-strip {
+    display: none;
+}
+
+.cricket-box-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cricket-box-wrap[data-target="B"] {
+    grid-column: 2;
+}
+
+.cricket-box {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--border);
+    border-radius: 10px;
+    background: #262b33;
+    cursor: pointer;
+}
+
+.cricket-box svg {
+    width: 60%;
+    height: 60%;
+}
+
+.cricket-box:disabled {
+    cursor: not-allowed;
+}
+
+.cricket-box.closed {
+    background: #1a1d23;
+}
+
+.cricket-box-label {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #cfd8d2;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.cricket-closed-strip {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.closed-dot {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: #333944;
+}
+
+.closed-dot svg {
+    width: 70%;
+    height: 70%;
 }
 
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */

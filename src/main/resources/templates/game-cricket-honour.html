@@ -1,0 +1,99 @@
+<!--Build: 7E4D1F7C-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${game.name} + ' - Custom Dart Games'">Game - Custom Dart Games</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="game-screen">
+    <a class="link-back-icon on-dark" data-role="back-link" th:href="@{/dart/play}" title="Retour à la sélection du jeu"
+       aria-label="Retour à la sélection du jeu">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H5M11 18l-6-6 6-6"/>
+        </svg>
+    </a>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+
+    <div class="players-stack" id="players-stack">
+        <section class="player-panel cricket-panel" th:each="player, iter : ${players}"
+                  th:classappend="${iter.index == 0} ? ' active focused' : ''"
+                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
+            <div class="player-panel-header">
+                <span data-role="turns">Tours : 0</span>
+                <span class="player-name" th:text="${player.username}">Name</span>
+            </div>
+
+            <div class="player-score" data-role="score">0</div>
+
+            <div class="cricket-grid" data-role="cricket-grid">
+                <div class="cricket-box-wrap" th:each="target : ${ {'20','19','18','17','16','15','B'} }"
+                     th:attr="data-target=${target}">
+                    <button type="button" class="cricket-box" th:attr="data-target=${target}"></button>
+                    <span class="cricket-box-label" th:text="${target == 'B'} ? 'Bulle' : ${target}">20</span>
+                </div>
+            </div>
+
+            <div class="cricket-closed-strip" data-role="closed-strip">
+                <span class="closed-dot" th:each="target : ${ {'20','19','18','17','16','15','B'} }"
+                      th:attr="data-target=${target}"></span>
+            </div>
+        </section>
+    </div>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+    <div class="keypad-actions">
+        <button type="button" class="keypad-btn keypad-btn-danger" data-action="undo">ANNULER</button>
+        <button type="button" class="keypad-btn keypad-btn-primary" data-action="done">Terminer le tour</button>
+    </div>
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+    <div class="game-over-overlay" data-role="game-over" hidden>
+        <h2>&#127942; <span data-role="winner-name"></span> gagne !</h2>
+        <p data-role="winner-detail"></p>
+
+        <form method="post" th:action="@{/dart/play/finish}">
+            <input type="hidden" name="gameId" th:value="${game.id}">
+            <input type="hidden" name="userId" data-role="winner-input">
+            <input type="hidden" name="turns" data-role="turns-input">
+            <button type="submit" class="btn-block">Enregistrer le résultat</button>
+        </form>
+    </div>
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+    <div class="confirm-overlay" data-role="exit-confirm" hidden>
+        <div class="confirm-box">
+            <h2>Quitter la partie ?</h2>
+            <p>La progression de cette partie sera perdue.</p>
+            <div class="confirm-actions">
+                <button type="button" class="keypad-btn keypad-btn-muted" data-action="exit-cancel">Annuler</button>
+                <button type="button" class="keypad-btn keypad-btn-danger" data-action="exit-confirm">Quitter</button>
+            </div>
+        </div>
+    </div>
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+</main>
+<script th:src="@{/js/game-common.js}" defer></script>
+<script th:src="@{/js/game-cricket-common.js}" defer></script>
+<script th:src="@{/js/game-cricket-honour.js}" defer></script>
+</body>
+</html>

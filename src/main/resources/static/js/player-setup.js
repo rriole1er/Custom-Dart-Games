@@ -1,3 +1,8 @@
+// Players-setup checkbox grid: tracks click order (numbered chip badges +
+// a hidden `orderedPlayerIds` field for the controller) and, independently,
+// enforces an optional max-players cap. The two concerns are decoupled on
+// purpose — `data-max-players` may be absent (order tracking still works),
+// and the cap logic never touches `selectedOrder`.
 document.addEventListener('DOMContentLoaded', function () {
     var picker = document.querySelector('.player-picker');
     if (!picker) {
