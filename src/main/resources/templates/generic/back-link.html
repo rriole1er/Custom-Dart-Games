@@ -1,0 +1,7 @@
+<a th:fragment="backLink(href, label, onDark)" class="link-back-icon" th:classappend="${onDark} ? ' on-dark' : ''"
+   th:attr="href=${href}, title=${label}, aria-label=${label}, data-role=${onDark} ? 'back-link' : null">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M11 18l-6-6 6-6"/>
+    </svg>
+</a>

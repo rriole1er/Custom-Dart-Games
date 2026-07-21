@@ -1,10 +1,14 @@
-// Shared engine for every Cricket variant (game-cricket.js, game-cricket-honour.js).
-// A variant supplies only two things via `config`:
-//   - checkWinner(players, activeIndex, ctx): called after every mark/score change,
-//     returns the winning player object (or null if the game continues).
-//   - populateWinOverlay(overlay, player): fills in the win screen's text and the
-//     hidden form fields the leaderboard POST relies on.
-// Everything else (marks, scoring, turn order, undo) is identical across variants.
+// Every Cricket variant in one file. `startCricketBoard(config)` is the
+// shared engine — marks, scoring, which numbers are closed — and only needs
+// two things from a variant to know how it's won:
+//   - checkWinner(players, activeIndex, ctx): called after every mark/score
+//     change, returns the winning player object (or null if the game continues).
+//   - populateWinOverlay(overlay, player): fills in the win screen's text and
+//     the hidden form fields the leaderboard POST relies on.
+// Turn order, both undo levels, and the win/undo chrome are handled by the
+// shared game-turn-engine.js (loaded before this file). Which variant is
+// active comes from the template via a `data-variant` attribute (set from
+// the `variant` model attribute), read once at the bottom of this file.
 function startCricketBoard(config) {
     document.addEventListener('DOMContentLoaded', function () {
         var panels = Array.prototype.slice.call(document.querySelectorAll('.cricket-panel'));
@@ -14,12 +18,6 @@ function startCricketBoard(config) {
 
         var TARGETS = ['20', '19', '18', '17', '16', '15', 'B'];
         var TARGET_VALUE = {'20': 20, '19': 19, '18': 18, '17': 17, '16': 16, '15': 15, 'B': 25};
-        var MAX_CLICKS_PER_TURN = 9;
-
-        var gameOverOverlay = document.querySelector('[data-role="game-over"]');
-        var backLink = document.querySelector('[data-role="back-link"]');
-        var undoBtn = document.querySelector('[data-action="undo"]');
-        var doneBtn = document.querySelector('[data-action="done"]');
 
         // Indexed by mark count (0-3): open/no mark, one slash, crossed-out, then
         // closed (green). A number keeps showing the closed icon forever once
@@ -58,22 +56,6 @@ function startCricketBoard(config) {
             };
         });
 
-        var activeIndex = 0;
-        var focusedIndex = 0;
-        var clicksThisTurn = 0;
-        var gameOver = false;
-
-        // Undo model (mirrors game-countdown.js): `history` is a stack of one
-        // snapshot per completed turn, so Annuler can walk back arbitrarily far
-        // through the whole game, not just the current turn. Unlike countdown
-        // (which buffers a turn's input separately and only applies it on
-        // commit), Cricket mutates a player's marks/score live on every click,
-        // so `pendingSnapshot` records that player's state as it was at the
-        // start of the turn — letting undo also discard mid-turn clicks that
-        // were never committed via "Terminer le tour".
-        var history = [];
-        var pendingSnapshot = null;
-
         function isClosed(target) {
             return players.every(function (p) {
                 return p.marks[target] >= 3;
@@ -94,31 +76,14 @@ function startCricketBoard(config) {
             return copy;
         }
 
-        function beginTurn() {
-            var player = players[activeIndex];
-            pendingSnapshot = {
-                playerIndex: activeIndex,
-                marks: snapshotMarks(player.marks),
-                score: player.score,
-                turns: player.turns
-            };
-        }
-
-        function setFocused(index) {
-            focusedIndex = index;
-            render();
-        }
-
-        function render() {
+        function render(ctx) {
             players.forEach(function (player, index) {
-                player.panel.classList.toggle('active', index === activeIndex && !gameOver);
-                player.panel.classList.toggle('focused', index === focusedIndex);
                 player.turnsEl.textContent = 'Tours : ' + player.turns;
                 player.scoreEl.textContent = player.score;
 
                 TARGETS.forEach(function (target) {
                     var closed = isClosed(target);
-                    var disabled = closed || index !== activeIndex || gameOver;
+                    var disabled = closed || index !== ctx.activeIndex || ctx.gameOver;
 
                     player.boxes[target].innerHTML = MARK_ICON[player.marks[target]];
                     player.boxes[target].disabled = disabled;
@@ -126,37 +91,28 @@ function startCricketBoard(config) {
                     player.dots[target].innerHTML = MARK_ICON[player.marks[target]];
                 });
             });
-
-            undoBtn.disabled = history.length === 0;
         }
 
-        // Toggles the chrome between "game in progress" and "winner declared":
-        // used by declareWinner() and, in reverse, by undo when it walks back
-        // past the winning turn.
-        function setGameOverUi(isOver) {
-            gameOver = isOver;
-            backLink.hidden = isOver;
-            doneBtn.hidden = isOver;
-            undoBtn.hidden = isOver;
-            gameOverOverlay.hidden = !isOver;
-        }
-
-        function declareWinner(player) {
-            history.push(pendingSnapshot);
-            player.turns += 1;
-            setGameOverUi(true);
-            setFocused(players.indexOf(player));
-            gameOverOverlay.querySelector('[data-role="winner-name"]').textContent = player.name;
-            config.populateWinOverlay(gameOverOverlay, player);
-            render();
-        }
+        var engine = createTurnEngine({
+            players: players,
+            captureState: function (player) {
+                return {marks: snapshotMarks(player.marks), score: player.score};
+            },
+            applyState: function (player, state) {
+                player.marks = state.marks;
+                player.score = state.score;
+            },
+            render: render
+        });
 
         function handleBoxClick(target, playerIndex) {
-            if (gameOver || playerIndex !== activeIndex || isClosed(target) || clicksThisTurn >= MAX_CLICKS_PER_TURN) {
+            if (!engine.canAct(playerIndex) || isClosed(target)) {
                 return;
             }
 
             var player = players[playerIndex];
+            engine.recordClick(player);
+
             var prevMarks = player.marks[target];
 
             // Core Cricket rule: the first 3 hits on an open number just mark it;
@@ -168,23 +124,15 @@ function startCricketBoard(config) {
                 player.score += TARGET_VALUE[target];
             }
 
-            clicksThisTurn += 1;
+            engine.render();
 
-            render();
-
-            var winner = config.checkWinner(players, activeIndex, {targets: TARGETS, allClosed: allClosed});
+            var winner = config.checkWinner(players, engine.getActiveIndex(), {targets: TARGETS, allClosed: allClosed});
             if (winner) {
-                declareWinner(winner);
+                engine.declareWinner(winner, config.populateWinOverlay);
             }
         }
 
         players.forEach(function (player, index) {
-            player.panel.addEventListener('click', function () {
-                if (!gameOver) {
-                    setFocused(index);
-                }
-            });
-
             TARGETS.forEach(function (target) {
                 player.boxes[target].addEventListener('click', function (e) {
                     e.stopPropagation();
@@ -192,47 +140,51 @@ function startCricketBoard(config) {
                 });
             });
         });
-
-        undoBtn.addEventListener('click', function () {
-            var snapshot = history.pop();
-            if (!snapshot) {
-                return;
-            }
-
-            // Discard whatever the current player has clicked this turn but not yet committed.
-            var currentPlayer = players[activeIndex];
-            currentPlayer.marks = snapshotMarks(pendingSnapshot.marks);
-            currentPlayer.score = pendingSnapshot.score;
-
-            var player = players[snapshot.playerIndex];
-            player.marks = snapshot.marks;
-            player.score = snapshot.score;
-            player.turns = snapshot.turns;
-
-            activeIndex = snapshot.playerIndex;
-            clicksThisTurn = 0;
-            beginTurn();
-
-            if (gameOver) {
-                setGameOverUi(false);
-            }
-
-            setFocused(activeIndex);
-        });
-
-        doneBtn.addEventListener('click', function () {
-            if (gameOver) {
-                return;
-            }
-            history.push(pendingSnapshot);
-            players[activeIndex].turns += 1;
-            activeIndex = (activeIndex + 1) % players.length;
-            clicksThisTurn = 0;
-            beginTurn();
-            setFocused(activeIndex);
-        });
-
-        beginTurn();
-        render();
     });
+}
+
+var CRICKET_VARIANTS = {
+    // Standard Cricket: closing all 7 numbers isn't enough on its own — you also
+    // need the highest (or equal-highest) score, so a player who closes early
+    // but is behind on points must keep scoring off open numbers until they
+    // catch up.
+    cricket: {
+        checkWinner: function (players, activeIndex, ctx) {
+            var maxScore = players.reduce(function (max, p) {
+                return Math.max(max, p.score);
+            }, 0);
+
+            for (var i = 0; i < players.length; i++) {
+                if (ctx.allClosed(players[i]) && players[i].score >= maxScore) {
+                    return players[i];
+                }
+            }
+            return null;
+        },
+        populateWinOverlay: function (overlay, player) {
+            overlay.querySelector('[data-role="winner-detail"]').textContent =
+                player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
+            overlay.querySelector('[data-role="winner-input"]').value = player.id;
+            overlay.querySelector('[data-role="turns-input"]').value = player.turns;
+        }
+    },
+    // Cricket Honour: no scoring goal — first to close all 7 numbers wins
+    // outright. Score still accumulates (any hit on an already-closed number),
+    // but only as a penalty recorded for the leaderboard: 0 is a perfect game.
+    'cricket-honour': {
+        checkWinner: function (players, activeIndex, ctx) {
+            var player = players[activeIndex];
+            return ctx.allClosed(player) ? player : null;
+        },
+        populateWinOverlay: function (overlay, player) {
+            overlay.querySelector('[data-role="winner-detail"]').textContent = 'Score final : ' + player.score;
+            overlay.querySelector('[data-role="winner-input"]').value = player.id;
+            overlay.querySelector('[data-role="turns-input"]').value = player.score;
+        }
+    }
+};
+
+var variantEl = document.querySelector('[data-variant]');
+if (variantEl) {
+    startCricketBoard(CRICKET_VARIANTS[variantEl.dataset.variant]);
 }

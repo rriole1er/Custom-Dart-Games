@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Custom Dart Games</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
+<head th:replace="~{generic/page-head :: pageHead('Custom Dart Games')}"></head>
 <body>
 <main class="board">
     <h1 class="board-title">Dart Games</h1>
     <nav class="board-actions">
         <a class="btn-oval btn-play" th:href="@{/dart/play}">Jouer</a>
-        <a class="btn-oval btn-players" th:href="@{/dart/players}">Joueurs</a>
+        <a class="btn-oval btn-players" th:href="@{/dart/players}">Leaderboard</a>
         <a class="btn-oval btn-rules" th:href="@{/dart/rules}">Règles</a>
     </nav>
 </main>

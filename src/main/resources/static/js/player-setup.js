@@ -1,8 +1,11 @@
+// Build: 7E4D1F7C
 // Players-setup checkbox grid: tracks click order (numbered chip badges +
-// a hidden `orderedPlayerIds` field for the controller) and, independently,
-// enforces an optional max-players cap. The two concerns are decoupled on
-// purpose — `data-max-players` may be absent (order tracking still works),
-// and the cap logic never touches `selectedOrder`.
+// a hidden `orderedPlayerIds` field for the controller), enforces an optional
+// max-players cap, and enforces an optional min-players requirement on the
+// Start button. The three concerns are decoupled on purpose — each data
+// attribute may be absent on its own (order tracking always works; the cap
+// and the minimum don't depend on each other), and none of them touch
+// `selectedOrder` except the order-tracking code itself.
 document.addEventListener('DOMContentLoaded', function () {
     var picker = document.querySelector('.player-picker');
     if (!picker) {
@@ -12,9 +15,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var checkboxes = Array.prototype.slice.call(picker.querySelectorAll('input[type="checkbox"]'));
     var counter = document.getElementById('player-count');
     var orderedInput = document.getElementById('ordered-player-ids');
+    var startBtn = picker.closest('form').querySelector('button[type="submit"]');
 
     var max = parseInt(picker.dataset.maxPlayers, 10);
     var hasMax = !!max && max > 0;
+
+    var min = parseInt(picker.dataset.minPlayers, 10);
+    var hasMin = !!min && min > 0;
 
     var selectedOrder = [];
 
@@ -67,13 +74,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function refreshMin() {
+        if (!hasMin || !startBtn) {
+            return;
+        }
+        startBtn.disabled = checkedCount() < min;
+    }
+
     checkboxes.forEach(function (checkbox) {
         checkbox.addEventListener('change', function () {
             updateOrder();
             refreshCap();
+            refreshMin();
         });
     });
 
     updateOrder();
     refreshCap();
+    refreshMin();
 });

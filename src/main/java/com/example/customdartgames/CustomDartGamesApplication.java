@@ -31,7 +31,12 @@ public class CustomDartGamesApplication { // main entry
 				cricketHonor.setName("Cricket Honneur");
 				cricketHonor.setDescription(
 						"Ce jeu reprend les règles du Cricket, mais l'objectif est ici d'avoir le moins de points possible. L'accent est mis sur la rapidité à fermer les nombres plutôt que sur l'accumulation de points : le joueur qui termine la partie avec le score le plus bas gagne.");
-				cricketHonor.setScoreBasedOnTurn(false);
+
+				// Here we want to store a score. But in Cricket honor, the
+				// lowest score is the best one. So it's similar to a turn best
+				// score. That's why we send a turns instead of a score. The
+				// turns logic sticks with the cricket honor game
+				cricketHonor.setScoreBasedOnTurn(true);
 				gameRepository.save(cricketHonor);
 
 				Game fiveOhOne = new Game();

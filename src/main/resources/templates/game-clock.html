@@ -1,11 +1,3 @@
-<!--
-    Single template for every Cricket variant. `variant` (a model attribute
-    the controller sets to "cricket" or "cricket-honour") is rendered as
-    data-variant below; game-cricket-common.js reads it to pick which
-    checkWinner/populateWinOverlay pair runs the board — that pair alone is
-    what makes a variant different, so there is exactly one template and one
-    script for all of them.
--->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{generic/page-head :: pageHead(${game.name} + ' - Custom Dart Games')}"></head>
@@ -16,7 +8,7 @@
     <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
 
     <div class="players-stack" id="players-stack">
-        <section class="player-panel cricket-panel" th:each="player, iter : ${players}"
+        <section class="player-panel clock-panel" th:each="player, iter : ${players}"
                  th:classappend="${iter.index == 0} ? ' active focused' : ''"
                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
             <div class="player-panel-header">
@@ -24,20 +16,22 @@
                 <span class="player-name" th:text="${player.username}">Name</span>
             </div>
 
-            <div class="player-score" data-role="score">0</div>
-
-            <div class="cricket-grid" data-role="cricket-grid">
-                <div class="cricket-box-wrap" th:each="target : ${ {'20','19','18','17','16','15','B'} }"
-                     th:attr="data-target=${target}">
-                    <button type="button" class="cricket-box" th:attr="data-target=${target}"></button>
-                    <span class="cricket-box-label" th:text="${target == 'B'} ? 'Bulle' : ${target}">20</span>
+            <div class="clock-hero">
+                <div class="clock-target" data-role="target">1</div>
+                <div class="clock-points">
+                    <span class="clock-point-dot"></span>
+                    <span class="clock-point-dot"></span>
+                    <span class="clock-point-dot"></span>
                 </div>
             </div>
 
-            <div class="cricket-closed-strip" data-role="closed-strip">
-                <span class="closed-dot" th:each="target : ${ {'20','19','18','17','16','15','B'} }"
-                      th:attr="data-target=${target}"></span>
+            <div class="clock-grid" data-role="clock-grid">
+                <button type="button" class="clock-box"
+                        th:each="target, iter2 : ${ {'1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','B'} }"
+                        th:attr="data-index=${iter2.index}" th:text="${target}"></button>
             </div>
+
+            <button type="button" class="clock-expand" data-action="toggle-expand">Voir tout</button>
         </section>
     </div>
 
@@ -67,6 +61,6 @@
 </main>
 <script th:src="@{/js/game-common.js}" defer></script>
 <script th:src="@{/js/game-turn-engine.js}" defer></script>
-<script th:src="@{/js/game-cricket-common.js}" defer></script>
+<script th:src="@{/js/game-clock.js}" defer></script>
 </body>
 </html>

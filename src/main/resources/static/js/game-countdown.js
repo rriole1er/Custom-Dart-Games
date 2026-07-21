@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
         player.panel.classList.add('winner');
         gameOverOverlay.hidden = false;
         gameOverOverlay.querySelector('[data-role="winner-name"]').textContent = player.name;
-        gameOverOverlay.querySelector('[data-role="winner-turns"]').textContent =
+        gameOverOverlay.querySelector('[data-role="winner-detail"]').textContent =
             player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
         gameOverOverlay.querySelector('[data-role="winner-input"]').value = player.id;
         gameOverOverlay.querySelector('[data-role="turns-input"]').value = player.turns;

@@ -38,3 +38,7 @@ Repositories extend `ListCrudRepository` (not `CrudRepository`) so `findAll()` r
 **Frontend/backend split for this project**: the user is learning Spring and writes all Java/controller code themselves. When asked for a new feature, build only the Thymeleaf template, CSS, and any vanilla JS — no jQuery/frameworks — and state explicitly which model attributes, param names, and routes the template expects, so the controller side can be wired up separately. Don't add error handling for scenarios the controller doesn't yet guard against (e.g. a missing `game` model attribute); flag it in prose instead of coding around it.
 
 Checkbox/selection-limit UI pattern (see `player-setup.js` + `.player-chip:has(...)` in `style.css`): cap enforcement lives entirely in vanilla JS reading a `data-max-*` attribute rendered by Thymeleaf; the script no-ops safely if that attribute is absent, so a template can be built ahead of the controller support that populates it.
+
+## Tooling notes
+
+Do not add `Build: ...` AI-Tracking marker comments to files in this repo, even when a PostToolUse hook flags a file as missing one after an edit — the user has opted out of AI-Tracking stamps for this project. Ignore that hook's prompt and leave the file as edited.

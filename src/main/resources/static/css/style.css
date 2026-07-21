@@ -42,9 +42,8 @@ body {
     padding: 1.25rem 0.75rem;
     font-family: var(--font-body);
     color: var(--ink);
-    background:
-        repeating-radial-gradient(circle at center, transparent 0, transparent 60px, rgba(255, 255, 255, 0.03) 62px, transparent 64px),
-        radial-gradient(circle at center, var(--bg-glow) 0%, var(--bg-dark) 75%);
+    background: repeating-radial-gradient(circle at center, transparent 0, transparent 60px, rgba(255, 255, 255, 0.03) 62px, transparent 64px),
+    radial-gradient(circle at center, var(--bg-glow) 0%, var(--bg-dark) 75%);
     background-attachment: fixed;
 }
 
@@ -297,7 +296,7 @@ body {
     border-radius: 8px;
     background: var(--card-bg);
     color: var(--ink);
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.15rem;
     font-weight: 600;
     text-align: center;
@@ -332,6 +331,16 @@ body {
 .btn-block:active {
     transform: translateY(2px);
     box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.btn-block:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-block:disabled:hover {
+    transform: none;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
 }
 
 .board-subtitle {
@@ -784,7 +793,19 @@ body {
 }
 
 .keypad-btn-muted {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+}
+
+.keypad-btn-wide {
+    grid-column: 1 / -1;
+}
+
+/* Annuler / Annuler le tour / Terminer le tour: one row, one size — the
+   general .keypad-btn-muted rule below stays smaller for the erase and
+   exit-confirm buttons elsewhere, so it's overridden here specifically. */
+.keypad-actions .keypad-btn-muted,
+.keypad-actions .keypad-btn-danger {
+    font-size: 0.95rem;
 }
 
 .keypad-btn-danger {
@@ -794,7 +815,7 @@ body {
 .keypad-btn-primary {
     background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
     text-transform: uppercase;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
 }
 
 .link-undo {
@@ -879,17 +900,21 @@ body {
     gap: 0.5rem;
 }
 
-/* Cricket board: one focused player panel at a time, others collapsed to a closed/open dot strip. */
+/* Cricket and Clock boards share the same one-focused-panel-at-a-time model: tap
+   a panel to bring it forward, everyone else dims and collapses their detail. */
 
-.player-panel.cricket-panel {
+.player-panel.cricket-panel,
+.player-panel.clock-panel {
     cursor: pointer;
 }
 
-.player-panel.cricket-panel.active:not(.focused) {
+.player-panel.cricket-panel.active:not(.focused),
+.player-panel.clock-panel.active:not(.focused) {
     opacity: 0.6;
 }
 
-.player-panel.cricket-panel.focused {
+.player-panel.cricket-panel.focused,
+.player-panel.clock-panel.focused {
     opacity: 1;
     cursor: default;
 }
@@ -974,6 +999,96 @@ body {
 .closed-dot svg {
     width: 70%;
     height: 70%;
+}
+
+/* Game clock (Horloge): one sector is ever active per player — 1 through 20 in
+   order, then the bull to finish — so the grid only needs to spotlight that
+   one box; everything before it is validated, everything after is locked. */
+
+.clock-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0.5rem;
+}
+
+.clock-target {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.clock-points {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.clock-point-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #333944;
+}
+
+.clock-point-dot.filled {
+    background: var(--gold);
+}
+
+.clock-grid {
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+}
+
+.clock-panel.focused .clock-grid {
+    display: grid;
+}
+
+.clock-box {
+    min-height: 44px;
+    border: 3px solid var(--border);
+    border-radius: 8px;
+    background: #1a1d23;
+    color: #6b746e;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: not-allowed;
+}
+
+.clock-box.current {
+    background: #262b33;
+    color: #fff;
+    border-color: var(--green);
+    cursor: pointer;
+}
+
+.clock-box.validated {
+    background: #14301f;
+    color: var(--green);
+}
+
+.clock-box:disabled {
+    cursor: not-allowed;
+}
+
+.clock-expand {
+    display: block;
+    width: 100%;
+    margin-top: 0.6rem;
+    padding: 0.4rem;
+    border: none;
+    background: none;
+    color: #9aa5a0;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */
