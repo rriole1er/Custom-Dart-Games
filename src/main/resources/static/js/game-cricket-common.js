@@ -165,7 +165,7 @@ var CRICKET_VARIANTS = {
             overlay.querySelector('[data-role="winner-detail"]').textContent =
                 player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
             overlay.querySelector('[data-role="winner-input"]').value = player.id;
-            overlay.querySelector('[data-role="turns-input"]').value = player.turns;
+            overlay.querySelector('[data-role="result-input"]').value = player.turns;
         }
     },
     // Cricket Honour: no scoring goal — first to close all 7 numbers wins
@@ -179,7 +179,7 @@ var CRICKET_VARIANTS = {
         populateWinOverlay: function (overlay, player) {
             overlay.querySelector('[data-role="winner-detail"]').textContent = 'Score final : ' + player.score;
             overlay.querySelector('[data-role="winner-input"]').value = player.id;
-            overlay.querySelector('[data-role="turns-input"]').value = player.score;
+            overlay.querySelector('[data-role="result-input"]').value = player.score;
         }
     }
 };

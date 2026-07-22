@@ -14,14 +14,13 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
 	private String username;
 
-    @OneToMany(mappedBy = "user")
-    private Set<UserGameStats> userGameStats;
-
+	@OneToMany(mappedBy = "user")
+	private Set<UserGameStats> userGameStats;
 
 	public Integer getId() {
 		return id;
@@ -39,4 +38,11 @@ public class User {
 		this.username = username;
 	}
 
+	public Set<UserGameStats> getUserGameStats() {
+		return userGameStats;
+	}
+
+	public void setUserGameStats(Set<UserGameStats> userGameStats) {
+		this.userGameStats = userGameStats;
+	}
 }

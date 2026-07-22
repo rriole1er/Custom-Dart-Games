@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{generic/page-head :: pageHead(${game.name} + ' - Custom Dart Games')}"></head>
+<body>
+<main class="game-screen" th:attr="data-variant=${variant}">
+    <div th:replace="~{generic/back-link :: backLink(@{/dart/play}, 'Retour à la sélection du jeu', true)}"></div>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+    <div class="players-stack" id="players-stack">
+        <section class="player-panel baseball-panel" th:each="player, iter : ${players}"
+                 th:classappend="${iter.index == 0} ? ' active' : ''"
+                 th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
+            <div class="player-panel-header">
+                <span data-role="turns">Manche 1 / 9</span>
+                <span class="player-name" th:text="${player.username}">Name</span>
+            </div>
+
+            <div class="clock-hero">
+                <div class="clock-target" data-role="target">Viser le 1</div>
+            </div>
+
+            <div class="baseball-hero">
+                <div class="baseball-bats" data-role="points-left"></div>
+
+                <button type="button" class="baseball-ball-btn" data-role="target-box" title="Viser" aria-label="Viser">
+                    <svg viewBox="0 0 24 24" width="42" height="42" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" fill="#f5efe0" stroke="#1a1a1a" stroke-width="1.5"/>
+                        <path d="M6 5 Q12 12 6 19" fill="none" stroke="var(--red)" stroke-width="1.2"/>
+                        <path d="M18 5 Q12 12 18 19" fill="none" stroke="var(--red)" stroke-width="1.2"/>
+                    </svg>
+                </button>
+
+                <div class="baseball-bats" data-role="points-right"></div>
+            </div>
+        </section>
+    </div>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+    <div th:replace="~{generic/turn-actions :: turnActions}"></div>
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+    <div class="game-over-overlay" data-role="game-over" th:attr="data-game-id=${game.id}" hidden>
+        <h2>&#127942; Partie terminée !</h2>
+        <p>Scores :</p>
+
+        <div class="baseball-ranking" data-role="final-ranking"></div>
+
+        <button type="button" class="btn-block" data-action="save-all-results">Enregistrer les résultats</button>
+    </div>
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+    <div th:replace="~{generic/exit-overlay :: exitOverlay}"></div>
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+</main>
+<script th:src="@{/js/game-common.js}" defer></script>
+<script th:src="@{/js/game-turn-engine.js}" defer></script>
+<script th:src="@{/js/game-baseball-common.js}" defer></script>
+</body>
+</html>

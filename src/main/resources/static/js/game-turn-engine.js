@@ -16,6 +16,21 @@
 //   applyState(player, state) - restores a snapshot captured above
 //   render(ctx)          - repaints the game's own board; ctx = {activeIndex, focusedIndex, gameOver}
 //   maxClicksPerTurn     - optional, defaults to 9 (3 darts x up to 3 taps for a triple)
+//   focusable            - optional, defaults to true; set false to skip the
+//                          tap-a-panel-to-bring-it-forward wiring for games
+//                          where the other players have nothing to reveal
+//                          (e.g. Baseball, where scores stay hidden anyway)
+//   beforeCommit(player) - optional, called with the active player right before
+//                          a turn commits (Terminer le tour) — for folding a
+//                          turn-scoped accumulator into persistent state, e.g.
+//                          Baseball adding this inning's points onto the score
+//   checkGameEnd(players)- optional, called after every commit; return a
+//                          truthy value once the game should end this way
+//                          (fixed number of turns) rather than via a click
+//                          hitting a winning box (see declareWinner instead)
+//   populateGameEnd(overlay, players) - required if checkGameEnd is set;
+//                          fills in the game-over overlay however this ending
+//                          needs (e.g. a full ranked reveal of every player)
 //
 // Returns { canAct, recordClick, declareWinner, render, getActiveIndex }.
 function createTurnEngine(config) {
@@ -98,13 +113,15 @@ function createTurnEngine(config) {
         clicksThisTurn += 1;
     }
 
-    players.forEach(function (player, index) {
-        player.panel.addEventListener('click', function () {
-            if (!gameOver) {
-                setFocused(index);
-            }
+    if (config.focusable !== false) {
+        players.forEach(function (player, index) {
+            player.panel.addEventListener('click', function () {
+                if (!gameOver) {
+                    setFocused(index);
+                }
+            });
         });
-    });
+    }
 
     undoClickBtn.addEventListener('click', function () {
         if (gameOver) {
@@ -147,11 +164,22 @@ function createTurnEngine(config) {
         if (gameOver) {
             return;
         }
+        if (config.beforeCommit) {
+            config.beforeCommit(players[activeIndex]);
+        }
         history.push(pendingSnapshot);
         players[activeIndex].turns += 1;
         activeIndex = (activeIndex + 1) % players.length;
         clicksThisTurn = 0;
         beginTurn();
+
+        if (config.checkGameEnd && config.checkGameEnd(players)) {
+            setGameOverUi(true);
+            config.populateGameEnd(gameOverOverlay, players);
+            renderAll();
+            return;
+        }
+
         setFocused(activeIndex);
     });
 

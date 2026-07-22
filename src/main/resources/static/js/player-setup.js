@@ -1,4 +1,3 @@
-// Build: 7E4D1F7C
 // Players-setup checkbox grid: tracks click order (numbered chip badges +
 // a hidden `orderedPlayerIds` field for the controller), enforces an optional
 // max-players cap, and enforces an optional min-players requirement on the

@@ -2,12 +2,18 @@ package com.example.customdartgames;
 
 import com.example.customdartgames.model.Game;
 import com.example.customdartgames.model.User;
+import com.example.customdartgames.model.UserGameStats;
 import com.example.customdartgames.repository.GameRepository;
 import com.example.customdartgames.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @SpringBootApplication
 public class CustomDartGamesApplication { // main entry
@@ -156,23 +162,163 @@ public class CustomDartGamesApplication { // main entry
 	}
 
 	@Bean
-	CommandLineRunner seedPlater(UserRepository userRepository) {
+	CommandLineRunner seedPlater(UserRepository userRepository, GameRepository gameRepository) {
 		return args -> {
 			if (userRepository.count() == 0) {
+
+				// Game to store best/worst scores
+				Game cricketHonor = gameRepository.findById(2).orElseThrow();
+				Game fiveOhOne = gameRepository.findById(3).orElseThrow();
+				Game scram = gameRepository.findById(6).orElseThrow();
+				Game scram_3P = gameRepository.findById(8).orElseThrow();
+				Game baseBall = gameRepository.findById(11).orElseThrow();
+				Game ballBase = gameRepository.findById(12).orElseThrow();
+
+				// User
 				User user = new User();
 				user.setUsername("Remy");
+
+				// Worst scores
+				Set<UserGameStats> stats = new HashSet<>(Set.of());
+
+				// Stat 1
+				UserGameStats userGameStats = new UserGameStats();
+				userGameStats.setUser(user);
+				userGameStats.setGame(baseBall);
+				userGameStats.setWorstScore(3);
+
+				// Stat 2
+				UserGameStats userGameStats2 = new UserGameStats();
+				userGameStats.setUser(user);
+				userGameStats2.setGame(ballBase);
+				userGameStats2.setWorstScore(1);
+
+				// Add to stats set
+				stats.add(userGameStats);
+				stats.add(userGameStats2);
+				user.setUserGameStats(stats);
+
 				userRepository.save(user);
 
+				// User
 				User user2 = new User();
 				user2.setUsername("Armand");
+
+				// Best scores
+				Set<UserGameStats> stats2 = new HashSet<>(Set.of());
+
+				// Stat 1
+				UserGameStats userGameStatsUser2 = new UserGameStats();
+				userGameStatsUser2.setUser(user2);
+				userGameStatsUser2.setGame(cricketHonor);
+				userGameStatsUser2.setBestScore(0);
+
+				// Stat 2
+				UserGameStats userGameStatsUser2_2 = new UserGameStats();
+				userGameStatsUser2_2.setUser(user2);
+				userGameStatsUser2_2.setGame(ballBase);
+				userGameStatsUser2_2.setBestScore(21);
+
+				// Stat 3
+				UserGameStats userGameStatsUser2_3 = new UserGameStats();
+				userGameStatsUser2_3.setUser(user2);
+				userGameStatsUser2_3.setGame(baseBall);
+				userGameStatsUser2_3.setWorstScore(3);
+
+				// Stat 4
+				UserGameStats userGameStatsUser2_4 = new UserGameStats();
+				userGameStatsUser2_4.setUser(user2);
+				userGameStatsUser2_4.setGame(scram);
+				userGameStatsUser2_4.setWorstScore(497);
+
+				// Add to stats set
+				stats2.add(userGameStatsUser2);
+				stats2.add(userGameStatsUser2_2);
+				stats2.add(userGameStatsUser2_3);
+				stats2.add(userGameStatsUser2_4);
+				user2.setUserGameStats(stats2);
+
+				// Save
 				userRepository.save(user2);
 
 				User user3 = new User();
 				user3.setUsername("Romain");
+
+				// Best scores
+				Set<UserGameStats> stats3 = new HashSet<>(Set.of());
+
+				// Stat 1
+				UserGameStats userGameStatsUser3 = new UserGameStats();
+				userGameStatsUser3.setUser(user3);
+				userGameStatsUser3.setGame(cricketHonor);
+				userGameStatsUser3.setBestScore(0);
+
+				// Stat 2
+				UserGameStats userGameStatsUser3_2 = new UserGameStats();
+				userGameStatsUser3_2.setUser(user3);
+				userGameStatsUser3_2.setGame(scram);
+				userGameStatsUser3_2.setBestScore(150);
+
+				// Stat 3
+				UserGameStats userGameStatsUser3_3 = new UserGameStats();
+				userGameStatsUser3_3.setUser(user3);
+				userGameStatsUser3_3.setGame(scram_3P);
+				userGameStatsUser3_3.setWorstScore(527);
+
+				// Add to stats set
+				stats3.add(userGameStatsUser3);
+				stats3.add(userGameStatsUser3_2);
+				stats3.add(userGameStatsUser3_3);
+				user3.setUserGameStats(stats3);
+
+				// Save
 				userRepository.save(user3);
 
 				User user4 = new User();
 				user4.setUsername("Tristan");
+
+				// Best scores
+				Set<UserGameStats> stats4 = new HashSet<>(Set.of());
+
+				// Stat 1
+				UserGameStats userGameStatsUser4 = new UserGameStats();
+				userGameStatsUser4.setUser(user4);
+				userGameStatsUser4.setGame(cricketHonor);
+				userGameStatsUser4.setBestScore(0);
+
+				// Stat 2
+				UserGameStats userGameStatsUser4_2 = new UserGameStats();
+				userGameStatsUser4_2.setUser(user4);
+				userGameStatsUser4_2.setGame(fiveOhOne);
+				userGameStatsUser4_2.setBestScore(12);
+
+				// Stat 3
+				UserGameStats userGameStatsUser4_3 = new UserGameStats();
+				userGameStatsUser4_3.setUser(user4);
+				userGameStatsUser4_3.setGame(baseBall);
+				userGameStatsUser4_3.setBestScore(21);
+
+				// Stat 4
+				UserGameStats userGameStatsUser4_4 = new UserGameStats();
+				userGameStatsUser4_4.setUser(user4);
+				userGameStatsUser4_4.setGame(scram_3P);
+				userGameStatsUser4_4.setBestScore(107);
+
+				// Stat 5
+				UserGameStats userGameStatsUser4_5 = new UserGameStats();
+				userGameStatsUser4_5.setUser(user4);
+				userGameStatsUser4_5.setGame(baseBall);
+				userGameStatsUser4_5.setWorstScore(3);
+
+				// Add to stats set
+				stats4.add(userGameStatsUser4);
+				stats4.add(userGameStatsUser4_2);
+				stats4.add(userGameStatsUser4_3);
+				stats4.add(userGameStatsUser4_4);
+				stats4.add(userGameStatsUser4_5);
+				user4.setUserGameStats(stats4);
+
+				// Save
 				userRepository.save(user4);
 
 				User user5 = new User();
@@ -181,5 +327,4 @@ public class CustomDartGamesApplication { // main entry
 			}
 		};
 	}
-
 }

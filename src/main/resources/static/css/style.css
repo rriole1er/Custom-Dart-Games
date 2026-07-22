@@ -901,7 +901,11 @@ body {
 }
 
 /* Cricket and Clock boards share the same one-focused-panel-at-a-time model: tap
-   a panel to bring it forward, everyone else dims and collapses their detail. */
+   a panel to bring it forward, everyone else dims and collapses their detail.
+   Baseball skips this (see game-turn-engine.js's `focusable: false`) — nothing
+   about another player's panel is worth revealing, scores stay hidden either
+   way — so it just uses the plain .player-panel/.player-panel.active look
+   already established for Countdown, below. */
 
 .player-panel.cricket-panel,
 .player-panel.clock-panel {
@@ -1089,6 +1093,89 @@ body {
     font-size: 0.85rem;
     text-decoration: underline;
     cursor: pointer;
+}
+
+/* Baseball: one rising target (1..9), tap the ball up to 9x a turn (3 darts x
+   triple). Scores stay hidden until every player has played all 9 innings —
+   only this inning's banked points show, as a row of bat icons. */
+
+.baseball-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+}
+
+.baseball-ball-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border: 3px solid var(--border);
+    border-radius: 50%;
+    background: #1a1d23;
+    cursor: pointer;
+}
+
+.baseball-ball-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.baseball-bats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 26px;
+    flex: 1;
+}
+
+.baseball-bats[data-role="points-left"] {
+    justify-content: flex-end;
+}
+
+.baseball-bats[data-role="points-right"] {
+    justify-content: flex-start;
+}
+
+.baseball-ranking {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.baseball-rank-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.9rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: #182a20;
+    color: #fff;
+}
+
+.baseball-rank-row.winner {
+    border-color: var(--gold);
+    background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--ink);
+}
+
+.baseball-rank-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+
+.baseball-rank-score {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */

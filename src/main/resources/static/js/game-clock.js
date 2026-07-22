@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
         overlay.querySelector('[data-role="winner-detail"]').textContent =
             player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
         overlay.querySelector('[data-role="winner-input"]').value = player.id;
-        overlay.querySelector('[data-role="turns-input"]').value = player.turns;
+        overlay.querySelector('[data-role="result-input"]').value = player.turns;
     }
 
     function handleBoxClick(index, playerIndex) {

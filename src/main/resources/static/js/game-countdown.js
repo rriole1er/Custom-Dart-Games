@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
         gameOverOverlay.querySelector('[data-role="winner-detail"]').textContent =
             player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
         gameOverOverlay.querySelector('[data-role="winner-input"]').value = player.id;
-        gameOverOverlay.querySelector('[data-role="turns-input"]').value = player.turns;
+        gameOverOverlay.querySelector('[data-role="result-input"]').value = player.turns;
     }
 
     function commitTurn(scored) {
