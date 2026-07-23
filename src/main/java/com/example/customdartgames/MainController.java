@@ -260,6 +260,9 @@ public class MainController {
 			model.addAttribute(VARIANT, "fast-clock");
 			return "game-clock";
 		}
+		case PURPLE_STAIN_CODE -> {
+			return "game-purple-stain";
+		}
 		}
 		return "redirect:/dart/play";
 	}

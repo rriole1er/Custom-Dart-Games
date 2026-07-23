@@ -7,6 +7,11 @@ public final class Util {
 	private Util() {
 	}
 
+	/**
+	 * @param userGameStats
+	 * @param result
+	 * @param isBasedOnTurn
+	 */
 	public static void saveScoresToStats(UserGameStats userGameStats, Integer result, boolean isBasedOnTurn) {
 		Integer bestScore = userGameStats.getBestScore();
 		Integer worstScore = userGameStats.getWorstScore();
@@ -34,6 +39,12 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * @param candidate
+	 * @param reference
+	 * @param isBasedOnTurn
+	 * @return
+	 */
 	// True if candidate is a better result than reference for this game type.
 	private static boolean isBetter(Integer candidate, Integer reference, boolean isBasedOnTurn) {
 		if (isBasedOnTurn) {

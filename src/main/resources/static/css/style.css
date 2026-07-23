@@ -1178,6 +1178,106 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+/* Purple Stain: the very first turn taps a zone on the dartboard to define
+   the target for the whole game (shared by every player, not per-player) —
+   after that the board is replaced by a plain "Zone à viser" banner and every
+   turn is just one button, did you hit it. Double/triple rings are drawn
+   noticeably thicker than a real board so they stay tappable on a phone. */
+
+.purple-target-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.purple-target-banner {
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.purple-board-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.purple-board-caption {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #fff;
+    text-align: center;
+}
+
+.purple-board {
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 1;
+}
+
+.purple-zone {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.purple-zone:hover {
+    opacity: 0.8;
+}
+
+.purple-zone.tapped {
+    animation: purple-zone-tap 0.3s ease;
+}
+
+@keyframes purple-zone-tap {
+    0% {
+        opacity: 1;
+    }
+    35% {
+        opacity: 0.25;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.purple-board-label {
+    fill: #fff;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.purple-turn-action {
+    margin-top: 0.6rem;
+}
+
+/* Every action here commits its whole turn at once (define the zone, or hit
+   "J'ai touché") — there's never a mid-turn click to walk back, so the
+   per-click undo button never has anything to do. */
+.purple-screen [data-action="undo-click"] {
+    display: none;
+}
+
+.purple-screen [data-action="undo"] {
+    grid-column: 1 / -1;
+}
+
+.purple-hint {
+    margin: 0;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #9aa5a0;
+}
+
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */
 @media (min-width: 600px) {
     body {
@@ -1224,5 +1324,9 @@ body {
     .keypad-btn {
         min-height: 60px;
         font-size: 1.3rem;
+    }
+
+    .purple-board {
+        max-width: 500px;
     }
 }

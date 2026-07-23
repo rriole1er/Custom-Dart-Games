@@ -32,7 +32,11 @@
 //                          fills in the game-over overlay however this ending
 //                          needs (e.g. a full ranked reveal of every player)
 //
-// Returns { canAct, recordClick, declareWinner, render, getActiveIndex }.
+// Returns { canAct, recordClick, declareWinner, commitTurn, render, getActiveIndex }.
+// commitTurn runs the exact same commit path as pressing "Terminer le tour" —
+// for a game whose whole turn is a single atomic action (e.g. Purple Stain's
+// one dart to define the target zone) instead of accumulating several clicks
+// before the player presses done themselves.
 function createTurnEngine(config) {
     var players = config.players;
     var captureState = config.captureState;
@@ -160,7 +164,7 @@ function createTurnEngine(config) {
         setFocused(activeIndex);
     });
 
-    doneBtn.addEventListener('click', function () {
+    function commitTurn() {
         if (gameOver) {
             return;
         }
@@ -181,7 +185,9 @@ function createTurnEngine(config) {
         }
 
         setFocused(activeIndex);
-    });
+    }
+
+    doneBtn.addEventListener('click', commitTurn);
 
     beginTurn();
     renderAll();
@@ -190,6 +196,7 @@ function createTurnEngine(config) {
         canAct: canAct,
         recordClick: recordClick,
         declareWinner: declareWinner,
+        commitTurn: commitTurn,
         render: renderAll,
         getActiveIndex: function () {
             return activeIndex;
