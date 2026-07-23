@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{generic/page-head :: pageHead(${game.name} + ' - Custom Dart Games')}"></head>
+<body>
+<main class="game-screen" th:attr="data-variant=${variant}">
+    <div th:replace="~{generic/back-link :: backLink(@{/dart/play}, 'Retour à la sélection du jeu', true)}"></div>
+
+    <!----------------------------    ROLES + BOARD  ------------------------------------------>
+
+    <div class="scram-roles">
+        <p class="scram-role-line scram-role-stopper-line">Stoppeur : <strong data-role="stopper-name"></strong></p>
+        <p class="scram-role-line scram-role-attacker-line">Attaquant : <strong data-role="attacker-name"></strong></p>
+    </div>
+
+    <div class="scram-grid" data-role="scram-grid">
+        <button type="button" class="clock-box scram-box"
+                th:each="target, iter2 : ${ {'1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','B'} }"
+                th:attr="data-index=${iter2.index}" th:text="${target}"></button>
+    </div>
+
+    <!----------------------------    ROLES + BOARD  ------------------------------------------>
+
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+    <div class="players-stack" id="players-stack">
+        <section class="player-panel scram-panel" th:each="player, iter : ${players}"
+                 th:classappend="${iter.index == 0} ? ' active' : ''"
+                 th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
+            <div class="player-panel-header">
+                <span data-role="turns">Tours : 0</span>
+                <span class="player-name" th:text="${player.username}">Name</span>
+            </div>
+
+            <div class="scram-panel-body">
+                <span class="scram-role-tag" data-role="role-tag">Stoppeur</span>
+                <div class="scram-penalty-stats">
+                    <span data-role="received-count">Pénalités reçues : 0</span>
+                    <span data-role="inflicted-count">Pénalités infligées : 0</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+    <div th:replace="~{generic/turn-actions :: turnActions}"></div>
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+    <div class="game-over-overlay" data-role="game-over" th:attr="data-game-id=${game.id}" hidden>
+        <h2>&#127942; Partie terminée !</h2>
+        <p>Pénalités reçues :</p>
+
+        <div class="baseball-ranking" data-role="final-ranking"></div>
+
+        <button type="button" class="btn-block" data-action="save-all-results">Enregistrer les résultats</button>
+    </div>
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+    <div th:replace="~{generic/exit-overlay :: exitOverlay}"></div>
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+</main>
+<script th:src="@{/js/game-common.js}" defer></script>
+<script th:src="@{/js/game-turn-engine.js}" defer></script>
+<script th:src="@{/js/game-scram-common.js}" defer></script>
+</body>
+</html>

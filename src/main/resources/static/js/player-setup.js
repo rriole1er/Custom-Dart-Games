@@ -22,6 +22,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var min = parseInt(picker.dataset.minPlayers, 10);
     var hasMin = !!min && min > 0;
 
+    // Scram variants pass how many of the first picks are the stopper side
+    // (1 for 2v1's lone stopper, 2 for 2v2's stopper pair) so those chips and
+    // the rest (the attacker side, whatever's left) can be colored apart —
+    // otherwise it's not obvious who's paired against whom before the game
+    // screen even shows roles. Absent for every other game.
+    var stopperCount = parseInt(picker.dataset.stopperCount, 10);
+    var hasTeams = !!stopperCount && stopperCount > 0;
+
     var selectedOrder = [];
 
     function checkedCount() {
@@ -57,6 +65,40 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function refreshTeams() {
+        if (!hasTeams) {
+            return;
+        }
+        checkboxes.forEach(function (checkbox) {
+            var chip = checkbox.parentElement;
+            var roleBadge = chip.querySelector('[data-role="chip-role"]');
+            var position = selectedOrder.indexOf(checkbox);
+
+            chip.classList.remove('player-chip-team-a', 'player-chip-team-b');
+            if (roleBadge) {
+                roleBadge.textContent = '';
+                roleBadge.classList.remove('chip-role-stopper', 'chip-role-attacker');
+            }
+
+            if (position === -1) {
+                return;
+            }
+            if (position < stopperCount) {
+                chip.classList.add('player-chip-team-a');
+                if (roleBadge) {
+                    roleBadge.textContent = 'S';
+                    roleBadge.classList.add('chip-role-stopper');
+                }
+            } else {
+                chip.classList.add('player-chip-team-b');
+                if (roleBadge) {
+                    roleBadge.textContent = 'A';
+                    roleBadge.classList.add('chip-role-attacker');
+                }
+            }
+        });
+    }
+
     function refreshCap() {
         if (!hasMax) {
             return;
@@ -83,12 +125,14 @@ document.addEventListener('DOMContentLoaded', function () {
     checkboxes.forEach(function (checkbox) {
         checkbox.addEventListener('change', function () {
             updateOrder();
+            refreshTeams();
             refreshCap();
             refreshMin();
         });
     });
 
     updateOrder();
+    refreshTeams();
     refreshCap();
     refreshMin();
 });

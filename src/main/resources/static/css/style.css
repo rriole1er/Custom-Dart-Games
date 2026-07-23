@@ -418,6 +418,51 @@ body {
     border-color: var(--green-dark);
 }
 
+/* Team games only (Scram 2v2 for now, via data-team-size in player-setup.js)
+   — first team-size picks vs next team-size picks, colored apart so it's
+   clear who's paired with whom before the game screen even shows roles. */
+.player-chip.player-chip-team-a {
+    background: #e3f3e9;
+    border-color: var(--green-dark);
+    box-shadow: 0 0 0 2px var(--green) inset;
+}
+
+.player-chip.player-chip-team-b {
+    background: #f6e4e1;
+    border-color: var(--red-dark);
+    box-shadow: 0 0 0 2px var(--red) inset;
+}
+
+.player-chip.player-chip-team-b input {
+    accent-color: var(--red);
+}
+
+.chip-role {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    margin-left: 0.35rem;
+    border-radius: 999px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.chip-role:not(:empty) {
+    display: inline-flex;
+}
+
+.chip-role.chip-role-stopper {
+    background: var(--green);
+}
+
+.chip-role.chip-role-attacker {
+    background: var(--red);
+}
+
 .player-chip:has(input:disabled) {
     opacity: 0.45;
     cursor: not-allowed;
@@ -1202,6 +1247,14 @@ body {
     letter-spacing: 0.03em;
 }
 
+.purple-round-warning {
+    margin: 0.4rem 0 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gold);
+}
+
 .purple-board-wrap {
     width: 100%;
     display: flex;
@@ -1260,6 +1313,21 @@ body {
     margin-top: 0.6rem;
 }
 
+.purple-panel.purple-eliminated {
+    opacity: 0.35;
+    border-color: var(--red-dark);
+}
+
+.purple-status {
+    margin: 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
 /* Every action here commits its whole turn at once (define the zone, or hit
    "J'ai touché") — there's never a mid-turn click to walk back, so the
    per-click undo button never has anything to do. */
@@ -1276,6 +1344,103 @@ body {
     text-align: center;
     font-size: 0.85rem;
     color: #9aa5a0;
+}
+
+/* Scram: one shared board for both players — the stopper closes numbers in
+   any order (no forced sequence, unlike Clock), the attacker scores a
+   penalty on every open number still standing. Roles swap once the stopper
+   clears the whole board; the match ends when the second stopper does too. */
+
+.scram-roles {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.scram-role-line {
+    margin: 0;
+    color: #9aa5a0;
+}
+
+.scram-role-line strong {
+    color: #fff;
+}
+
+.scram-role-stopper-line strong {
+    color: var(--green);
+}
+
+.scram-role-attacker-line strong {
+    color: var(--red);
+}
+
+.scram-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+}
+
+.scram-box.scram-mode-stopper {
+    background: #14301f;
+    color: var(--green);
+    border-color: var(--green);
+    cursor: pointer;
+}
+
+.scram-box.scram-mode-attacker {
+    background: #301414;
+    color: var(--red);
+    border-color: var(--red);
+    cursor: pointer;
+}
+
+.scram-panel-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.scram-penalty-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    font-size: 0.8rem;
+    color: #9aa5a0;
+    text-align: right;
+}
+
+.scram-penalty-stats [data-role="received-count"] {
+    color: #fff;
+    font-weight: 600;
+}
+
+.scram-role-tag {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    color: #9aa5a0;
+}
+
+.scram-role-tag.scram-role-stopper {
+    color: var(--green);
+    border-color: var(--green);
+}
+
+.scram-role-tag.scram-role-attacker {
+    color: var(--red);
+    border-color: var(--red);
 }
 
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */

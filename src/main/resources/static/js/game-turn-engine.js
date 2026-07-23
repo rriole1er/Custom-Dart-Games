@@ -15,7 +15,12 @@
 //   captureState(player) - returns a plain snapshot of that game's own fields
 //   applyState(player, state) - restores a snapshot captured above
 //   render(ctx)          - repaints the game's own board; ctx = {activeIndex, focusedIndex, gameOver}
-//   maxClicksPerTurn     - optional, defaults to 9 (3 darts x up to 3 taps for a triple)
+//   maxClicksPerTurn     - optional, defaults to 9 (3 darts x up to 3 taps for a
+//                          triple). Either a number, or a function(activeIndex)
+//                          returning one, for games where the cap depends on
+//                          which role is currently acting (e.g. Scram: 3 for
+//                          the stopper who closes at most one number a dart,
+//                          9 for the attacker scoring classic dart values)
 //   focusable            - optional, defaults to true; set false to skip the
 //                          tap-a-panel-to-bring-it-forward wiring for games
 //                          where the other players have nothing to reveal
@@ -31,6 +36,14 @@
 //   populateGameEnd(overlay, players) - required if checkGameEnd is set;
 //                          fills in the game-over overlay however this ending
 //                          needs (e.g. a full ranked reveal of every player)
+//   nextActiveIndex(activeIndex) - optional, called right after beforeCommit
+//                          to decide whose turn is next; return an index into
+//                          `players`. Defaults to plain round-robin
+//                          ((activeIndex + 1) % players.length). For a turn
+//                          order that isn't a fixed rotation — e.g. Scram
+//                          2v1, where the lone stopper gets every other turn
+//                          and the two attackers alternate for the turn in
+//                          between, rather than a simple 3-way cycle.
 //
 // Returns { canAct, recordClick, declareWinner, commitTurn, render, getActiveIndex }.
 // commitTurn runs the exact same commit path as pressing "Terminer le tour" —
@@ -43,6 +56,13 @@ function createTurnEngine(config) {
     var applyState = config.applyState;
     var gameRender = config.render;
     var maxClicksPerTurn = config.maxClicksPerTurn || 9;
+
+    function resolveMaxClicksPerTurn() {
+        if (typeof maxClicksPerTurn === 'function') {
+            return maxClicksPerTurn(activeIndex);
+        }
+        return maxClicksPerTurn;
+    }
 
     var backLink = document.querySelector('[data-role="back-link"]');
     var doneBtn = document.querySelector('[data-action="done"]');
@@ -109,7 +129,7 @@ function createTurnEngine(config) {
     }
 
     function canAct(playerIndex) {
-        return !gameOver && playerIndex === activeIndex && clicksThisTurn < maxClicksPerTurn;
+        return !gameOver && playerIndex === activeIndex && clicksThisTurn < resolveMaxClicksPerTurn();
     }
 
     function recordClick(player) {
@@ -173,7 +193,9 @@ function createTurnEngine(config) {
         }
         history.push(pendingSnapshot);
         players[activeIndex].turns += 1;
-        activeIndex = (activeIndex + 1) % players.length;
+        activeIndex = config.nextActiveIndex
+            ? config.nextActiveIndex(activeIndex)
+            : (activeIndex + 1) % players.length;
         clicksThisTurn = 0;
         beginTurn();
 

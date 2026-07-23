@@ -140,7 +140,7 @@ public class MainController {
 	}
 
 	@PostMapping(path = "/play/start")
-	public String playStart(@RequestParam Integer gameId) {
+	public String playStart(@RequestParam Integer gameId, Model model) {
 
 		// Set the playerNumber based on the game code
 		Integer playerNumber = switch (gameId) {
@@ -183,11 +183,13 @@ public class MainController {
 			}
 		}
 		case SCRAM_3P_CODE -> {
+			model.addAttribute("stopperCount", 1);
 			if (playerNumber != THREE_PLAYERS) {
 				return redirectionUrl + THREE_PLAYERS; // redirect to 3 players
 			}
 		}
 		case SCRAM_4P_CODE -> {
+			model.addAttribute("stopperCount", 2);
 			if (playerNumber != FOUR_PLAYERS) {
 				return redirectionUrl + FOUR_PLAYERS; // redirect to 4 players
 			}
@@ -240,7 +242,16 @@ public class MainController {
 			return "game-countdown";
 		}
 		case SCRAM_CODE -> {
-			// TODO
+			model.addAttribute(VARIANT, "scram");
+			return "game-scram";
+		}
+		case SCRAM_4P_CODE -> {
+			model.addAttribute(VARIANT, "scram-2v2");
+			return "game-scram";
+		}
+		case SCRAM_3P_CODE -> {
+			model.addAttribute(VARIANT, "scram-2v1");
+			return "game-scram";
 		}
 		case OZONE_CODE -> {
 			// TODO

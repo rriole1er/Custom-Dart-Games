@@ -22,13 +22,20 @@
              selection cap in player-setup.js; data-min-players gates the Start
              button (every dart game needs at least 2 players, regardless of
              game type, so it's a fixed value rather than tied to playerNumber);
-             chip-order badges show click order. -->
+             chip-order badges show click order. data-stopper-count (optional,
+             blank unless the controller sets a `stopperCount` model attribute
+             — 1 for Scram 2v1's lone stopper, 2 for 2v2's stopper pair) colors
+             the first stopper-count picks green and the rest red, so it's
+             clear who's paired against whom before the game starts; absent
+             for every other game, where player-setup.js leaves chips
+             uncolored. -->
         <div class="player-picker" th:if="${!users.isEmpty()}" data-min-players="2"
-             th:attr="data-max-players=${playerNumber}">
+             th:attr="data-max-players=${playerNumber},data-stopper-count=${stopperCount}">
             <label class="player-chip" th:each="player : ${users}">
                 <input type="checkbox" th:value="${player.id}">
                 <span th:text="${player.username}">Name</span>
                 <span class="chip-order" data-role="chip-order"></span>
+                <span class="chip-role" data-role="chip-role"></span>
             </label>
         </div>
 

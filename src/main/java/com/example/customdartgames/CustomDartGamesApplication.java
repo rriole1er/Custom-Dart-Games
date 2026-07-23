@@ -71,22 +71,22 @@ public class CustomDartGamesApplication { // main entry
 				Game scram = new Game();
 				scram.setName("Scram");
 				scram.setDescription(
-						"Ce jeu se joue avec un attaquant et un stoppeur. Il reprend le principe de l'Horloge Rapide : le stoppeur doit fermer tous les nombres une seule fois pour arrêter la manche. Tant qu'il n'a pas fermé tous les nombres, la partie continue et l'attaquant marque le plus de points possible sur les zones encore ouvertes. Une fois tout fermé, les rôles s'inversent. Le joueur ayant le plus de points à la fin de la partie gagne.");
-				scram.setScoreBasedOnTurn(false);
+						"Ce jeu se joue avec un attaquant et un stoppeur. Il reprend le principe de l'Horloge Rapide : le stoppeur doit fermer tous les nombres une seule fois pour arrêter la manche. Tant qu'il n'a pas fermé tous les nombres, la partie continue et l'attaquant inflige le plus de pénalités possible sur les zones encore ouvertes. Le stoppeur a pour score le nombre de pénalités que l'attaquant lui a infligé, c'est ce score qui est important au Scram. Un bon stoppeur a bloqué aussi vite pour recevoir peut de pénalités. Une fois tout fermé, les rôles s'inversent. Le joueur ayant infligé le plus de 'pénalités' à son stoppeur à la fin de la partie gagne. (Autrement dit, le stoppeur avec le plus de pénalités perds)");
+				scram.setScoreBasedOnTurn(true);
 				gameRepository.save(scram);
 
 				Game scram2 = new Game();
 				scram2.setName("Scram 2vs2");
 				scram2.setDescription(
 						"Une variante du Scram à 4 joueurs, avec deux stoppeurs et deux attaquants. Le principe reste le même, mais en équipe : le rôle d'attaquant et celui de stoppeur sont chacun partagés entre deux joueurs.");
-				scram2.setScoreBasedOnTurn(false);
+				scram2.setScoreBasedOnTurn(true);
 				gameRepository.save(scram2);
 
 				Game scram3 = new Game();
 				scram3.setName("Scram 2vs1");
 				scram3.setDescription(
 						"Une variante du Scram à 3 joueurs, avec un stoppeur et deux attaquants. Le principe reste le même, mais les deux attaquants jouent en équipe.");
-				scram3.setScoreBasedOnTurn(false);
+				scram3.setScoreBasedOnTurn(true);
 				gameRepository.save(scram3);
 
 				Game ozone = new Game();
@@ -147,7 +147,7 @@ public class CustomDartGamesApplication { // main entry
 				Game purpleStain = new Game();
 				purpleStain.setName("Purple Stain");
 				purpleStain.setDescription(
-						"Un joueur lance une fléchette pour définir une zone cible. Le premier joueur à toucher cette même zone remporte le point. Chaque nombre est divisé en deux zones : le cercle intérieur (petit) et le cercle extérieur (grand). Les doubles, triples, la demi-bulle et la bulle sont également des zones jouables.");
+						"Un joueur lance une fléchette pour définir une zone cible. Le premier joueur à toucher cette même zone remporte la manche. Chaque nombre est divisé en deux zones : le cercle intérieur (petit) et le cercle extérieur (grand). Les doubles, triples, la demi-bulle et la bulle sont également des zones jouables.Dans ce jeu, il y a une personne qui définit un nombre. Ensuite, le joueur qui le suit devient le premier à jouer. Pour que tout le monde est une chance de toucher la zone, tout le monde va essayer durant le tour. Si un joueur touche la zone après d'autres joueurs, ils sont éliminés. Cependant, s'il reste encore des joueurs après eux, ils ont le droit à une chance de toucher la zone. S'ils échouent, alors ils sont éliminés. Mais s'ils réussissent à toucher la zone, alors le jeu continue, et on redémarre un nouveau tour toujours sur le même nombre. Cette règle est perenne dans le temps, elle fonctionne à chaque tour.");
 				purpleStain.setScoreBasedOnTurn(true);
 				gameRepository.save(purpleStain);
 
