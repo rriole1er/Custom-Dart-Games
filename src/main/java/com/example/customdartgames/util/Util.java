@@ -65,7 +65,8 @@ public final class Util {
 	 * @param bestPerGame
 	 */
 	public static void computeScore(List<? extends ScoreTrackable> stats,
-			Map<Integer, Map<Integer, ScoreTrackable>> statsByUserAndGame, Map<Integer, Integer> bestPerGame) {
+			Map<Integer, Map<Integer, ScoreTrackable>> statsByUserAndGame, Map<Integer, Integer> bestPerGame,
+			boolean forceHigherIsBetter) {
 		for (ScoreTrackable stat : stats) {
 
 			Game game = stat.getGame();
@@ -76,7 +77,7 @@ public final class Util {
 			if (bestScore != null) {
 				Integer gameId = game.getId();
 				Integer currentBest = bestPerGame.get(gameId);
-				boolean isBasedOnTurnGame = game.isScoreBasedOnTurn();
+				boolean isBasedOnTurnGame = !forceHigherIsBetter && game.isScoreBasedOnTurn();
 
 				// If it's not a turn based game, store the highest score
 				if (currentBest == null || ((bestScore > currentBest) && !isBasedOnTurnGame)) {

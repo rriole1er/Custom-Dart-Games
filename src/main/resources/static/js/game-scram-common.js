@@ -110,6 +110,13 @@ function startScramBoard(config) {
             return 0;
         });
 
+        // The bull has no triple — a single dart on it maxes out at a double
+        // (50), so across 3 darts the most an attacker can tap it is 3 x 2 =
+        // 6, not the usual 3 x 3 = 9 every other number allows. Reset every
+        // turn (in beforeCommit below) and folded into captureState so both
+        // undo levels revert it too.
+        var bullTapsThisTurn = 0;
+
         // rotating-solo only: the lone stopper gets every other turn: the
         // slot in between alternates across the two attackers rather than
         // cycling the plain roster order (which would let the two attackers
@@ -209,7 +216,8 @@ function startScramBoard(config) {
                     }),
                     receivedByRound: receivedByRound.slice(),
                     closedFlags: closedFlags.slice(),
-                    roundIndex: roundIndex
+                    roundIndex: roundIndex,
+                    bullTapsThisTurn: bullTapsThisTurn
                 };
             },
             applyState: function (player, state) {
@@ -219,9 +227,11 @@ function startScramBoard(config) {
                 receivedByRound = state.receivedByRound;
                 closedFlags = state.closedFlags;
                 roundIndex = state.roundIndex;
+                bullTapsThisTurn = state.bullTapsThisTurn;
             },
             render: render,
             beforeCommit: function () {
+                bullTapsThisTurn = 0;
                 if (roundIndex < rounds.length - 1 && allClosed()) {
                     roundIndex += 1;
                     closedFlags = TARGETS.map(function () {
@@ -280,6 +290,11 @@ function startScramBoard(config) {
                 }
 
                 var player = turnOrder[activeIndex];
+
+                if (target === 'B' && !isStopper(player) && bullTapsThisTurn >= 6) {
+                    return;
+                }
+
                 engine.recordClick(player);
 
                 if (isStopper(player)) {
@@ -288,6 +303,9 @@ function startScramBoard(config) {
                     var value = target === 'B' ? 25 : parseInt(target, 10);
                     player.penaltiesInflicted += value;
                     receivedByRound[roundIndex] += value;
+                    if (target === 'B') {
+                        bullTapsThisTurn += 1;
+                    }
                 }
                 engine.render();
             });

@@ -92,12 +92,13 @@ public class MainController {
 		Map<Integer, Integer> bestPerGame = new HashMap<>(); // Game id, bestScore
 
 		// Compute stats and the best scores around all players
-		Util.computeScore(stats, statsByUserAndGame, bestPerGame);
+		Util.computeScore(stats, statsByUserAndGame, bestPerGame, false);
 
 		// Compute stats and the best scores SCRAM ONLY (secondary attackers stats)
 		Map<Integer, Map<Integer, ScoreTrackable>> statsByUserAndGameSecondary = new HashMap<>();
 		Map<Integer, Integer> bestPerGameSecondary = new HashMap<>();
-		Util.computeScore(statsSecondary, statsByUserAndGameSecondary, bestPerGameSecondary);
+		// Force higher score with a boolean flag true
+		Util.computeScore(statsSecondary, statsByUserAndGameSecondary, bestPerGameSecondary, true);
 
 		model.addAttribute("games", games);
 		model.addAttribute("users", users);
@@ -282,14 +283,15 @@ public class MainController {
 		Game game = gameRepository.findById(gameId).orElseThrow();
 		boolean isBasedOnTurn = game.isScoreBasedOnTurn();
 
+		// If no stat line for this player and this game :
 		if (userGameStatsRepository.findById(userGameStatsId).isEmpty()) {
 			UserGameStats userGameStats = new UserGameStats();
-			// userGameStats.setId(userGameStatsId);
+			userGameStats.setId(userGameStatsId);
 			userGameStats.setGame(game);
 			userGameStats.setBestScore(result);
 			userGameStats.setUser(userRepository.findById(userId).orElseThrow());
 			userGameStatsRepository.save(userGameStats);
-		} else {
+		} else { // else fetch the current best score and compare the best one / and worst too
 			userGameStatsRepository.findById(userGameStatsId).ifPresent(userGameStats -> {
 				Util.saveScoresToStats(userGameStats, result, isBasedOnTurn);
 				userGameStatsRepository.save(userGameStats);
@@ -301,16 +303,18 @@ public class MainController {
 		if (resultSecondary.isPresent()) {
 			Integer resultInflicted = resultSecondary.get();
 
+			// If no stat line for this player and this game :
 			if (userGameSecondaryStatsRepository.findById(userGameStatsId).isEmpty()) {
 				UserGameSecondaryStats userGameSecondaryStats = new UserGameSecondaryStats();
-				// userGameSecondaryStats.setId(userGameStatsId);
+				userGameSecondaryStats.setId(userGameStatsId);
 				userGameSecondaryStats.setGame(game);
 				userGameSecondaryStats.setBestScore(resultInflicted);
 				userGameSecondaryStats.setUser(userRepository.findById(userId).orElseThrow());
 				userGameSecondaryStatsRepository.save(userGameSecondaryStats);
-			} else {
+			} else { // else fetch the current best score and compare the best one / and worst too
 				userGameSecondaryStatsRepository.findById(userGameStatsId).ifPresent(userGameSecondaryStats -> {
-					Util.saveScoresToStats(userGameSecondaryStats, resultInflicted, isBasedOnTurn);
+					// Hardcode false because the secondary score is for scram attacker. Scores higher are relevant
+					Util.saveScoresToStats(userGameSecondaryStats, resultInflicted, false);
 					userGameSecondaryStatsRepository.save(userGameSecondaryStats);
 				});
 			}
