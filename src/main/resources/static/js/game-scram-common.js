@@ -303,6 +303,7 @@ function startScramBoard(config) {
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: 'gameId=' + encodeURIComponent(gameId) + '&userId=' + encodeURIComponent(player.id)
                         + '&result=' + encodeURIComponent(receivedByRound[ownRoundIndex(player)])
+                        + '&resultInflicted=' + encodeURIComponent(player.penaltiesInflicted)
                 });
             })).then(function () {
                 window.location.href = '/dart/play';

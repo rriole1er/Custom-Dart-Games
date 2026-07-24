@@ -238,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function () {
             targetZone = el.dataset.zone;
             roundTargetTurns = players.length;
             isDefiningCommit = true;
-            el.classList.add('tapped');
 
             // Defining the target isn't a real attempt at hitting it — every
             // player, including whoever just set it, starts their own count

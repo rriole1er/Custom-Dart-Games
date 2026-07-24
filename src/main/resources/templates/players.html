@@ -18,15 +18,42 @@
             <ul class="player-stats" th:unless="${games.isEmpty()}">
                 <li class="stat-row" th:each="game : ${games}"
                     th:with="stat=${statsByUserAndGame.get(user.id)?.get(game.id)},
-                             isLeader=${stat != null and stat.bestScore != null and stat.bestScore == bestPerGame.get(game.id)}">
+                             isLeader=${stat != null and stat.bestScore != null and stat.bestScore == bestPerGame.get(game.id)},
+                             hasSecondary=${bestPerGameSecondary.containsKey(game.id)},
+                             statSecondary=${statsByUserAndGameSecondary.get(user.id)?.get(game.id)},
+                             isLeaderSecondary=${statSecondary != null and statSecondary.bestScore != null and statSecondary.bestScore == bestPerGameSecondary.get(game.id)}">
                     <span class="stat-game" th:text="${game.name}">Game</span>
-                    <span class="stat-values">
+
+                    <span class="stat-values" th:unless="${hasSecondary}">
                         <span class="stat-badge best" th:classappend="${isLeader} ? ' leader' : ''">
                             <span th:text="${stat != null and stat.bestScore != null ? stat.bestScore : '—'}">—</span>
                             <span class="crown" th:if="${isLeader}">&#128081;</span>
                         </span>
                         <span class="stat-badge worst"
                               th:text="${stat != null and stat.worstScore != null ? stat.worstScore : '—'}">—</span>
+                    </span>
+
+                    <!-- Games with a stopper/attacker split (Scram) show both
+                         of a player's own scores, not just the one metric. -->
+                    <span class="stat-values-split" th:if="${hasSecondary}">
+                        <span class="stat-values">
+                            <span class="stat-role-tag stat-role-stopper">S</span>
+                            <span class="stat-badge best" th:classappend="${isLeader} ? ' leader' : ''">
+                                <span th:text="${stat != null and stat.bestScore != null ? stat.bestScore : '—'}">—</span>
+                                <span class="crown" th:if="${isLeader}">&#128081;</span>
+                            </span>
+                            <span class="stat-badge worst"
+                                  th:text="${stat != null and stat.worstScore != null ? stat.worstScore : '—'}">—</span>
+                        </span>
+                        <span class="stat-values">
+                            <span class="stat-role-tag stat-role-attacker">A</span>
+                            <span class="stat-badge best" th:classappend="${isLeaderSecondary} ? ' leader' : ''">
+                                <span th:text="${statSecondary != null and statSecondary.bestScore != null ? statSecondary.bestScore : '—'}">—</span>
+                                <span class="crown" th:if="${isLeaderSecondary}">&#128081;</span>
+                            </span>
+                            <span class="stat-badge worst"
+                                  th:text="${statSecondary != null and statSecondary.worstScore != null ? statSecondary.worstScore : '—'}">—</span>
+                        </span>
                     </span>
                 </li>
             </ul>

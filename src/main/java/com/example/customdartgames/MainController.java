@@ -1,15 +1,20 @@
 package com.example.customdartgames;
 
 import com.example.customdartgames.model.Game;
+import com.example.customdartgames.model.ScoreTrackable;
 import com.example.customdartgames.model.User;
+import com.example.customdartgames.model.UserGameSecondaryStats;
 import com.example.customdartgames.model.UserGameStats;
 import com.example.customdartgames.model.UserGameStatsId;
 import com.example.customdartgames.repository.GameRepository;
 import com.example.customdartgames.repository.UserGameStatsRepository;
+import com.example.customdartgames.repository.UserGameSecondaryStatsRepository;
 import com.example.customdartgames.repository.UserRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import com.example.customdartgames.util.Util;
 
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +66,9 @@ public class MainController {
 	@Autowired
 	private UserGameStatsRepository userGameStatsRepository;
 
+	@Autowired
+	private UserGameSecondaryStatsRepository userGameSecondaryStatsRepository;
+
 	@GetMapping(path = "/")
 	public String home() {
 		return "home";
@@ -77,39 +85,26 @@ public class MainController {
 		List<Game> games = gameRepository.findAll();
 		List<User> users = userRepository.findAll();
 		List<UserGameStats> stats = userGameStatsRepository.findAllWithUserAndGame();
+		List<UserGameSecondaryStats> statsSecondary = userGameSecondaryStatsRepository.findAllWithUserAndGame();
 
-		Map<Integer, Map<Integer, UserGameStats>> statsByUserAndGame = new HashMap<>(); // (User id,(Game id,
-																						// UserGameStats)
+		Map<Integer, Map<Integer, ScoreTrackable>> statsByUserAndGame = new HashMap<>(); // (User id,(Game id,////
+																							// UserGameStats)
 		Map<Integer, Integer> bestPerGame = new HashMap<>(); // Game id, bestScore
 
-		for (UserGameStats stat : stats) {
+		// Compute stats and the best scores around all players
+		Util.computeScore(stats, statsByUserAndGame, bestPerGame);
 
-			Game game = stat.getGame();
-			// create a map with UserId, (GameId,UserGameStats score)
-			statsByUserAndGame.computeIfAbsent(stat.getUser().getId(), id -> new HashMap<>()).put(game.getId(), stat); // populate
-
-			Integer bestScore = stat.getBestScore(); // In every game, look for the best score registered
-			if (bestScore != null) {
-				Integer gameId = game.getId();
-				Integer currentBest = bestPerGame.get(gameId);
-				boolean isBasedOnTurnGame = game.isScoreBasedOnTurn();
-
-				// If it's not a turn based game, store the highest score
-				if (currentBest == null || ((bestScore > currentBest) && !isBasedOnTurnGame)) {
-					bestPerGame.put(gameId, bestScore);
-				}
-
-				// If it's a turn based game, store the lowest result number
-				else if ((bestScore < currentBest) && isBasedOnTurnGame) {
-					bestPerGame.put(gameId, bestScore);
-				}
-			}
-		}
+		// Compute stats and the best scores SCRAM ONLY (secondary attackers stats)
+		Map<Integer, Map<Integer, ScoreTrackable>> statsByUserAndGameSecondary = new HashMap<>();
+		Map<Integer, Integer> bestPerGameSecondary = new HashMap<>();
+		Util.computeScore(statsSecondary, statsByUserAndGameSecondary, bestPerGameSecondary);
 
 		model.addAttribute("games", games);
 		model.addAttribute("users", users);
 		model.addAttribute("statsByUserAndGame", statsByUserAndGame);
 		model.addAttribute("bestPerGame", bestPerGame);
+		model.addAttribute("statsByUserAndGameSecondary", statsByUserAndGameSecondary);
+		model.addAttribute("bestPerGameSecondary", bestPerGameSecondary);
 		return "players";
 	}
 
@@ -140,7 +135,7 @@ public class MainController {
 	}
 
 	@PostMapping(path = "/play/start")
-	public String playStart(@RequestParam Integer gameId, Model model) {
+	public String playStart(@RequestParam Integer gameId) {
 
 		// Set the playerNumber based on the game code
 		Integer playerNumber = switch (gameId) {
@@ -280,30 +275,45 @@ public class MainController {
 
 	@PostMapping(path = "/play/finish")
 	public String finishGame(@RequestParam("gameId") Integer gameId, @RequestParam("userId") Integer userId,
-			@RequestParam("result") Integer result) {
+			@RequestParam("result") Integer result,
+			@RequestParam("resultInflicted") Optional<Integer> resultSecondary) {
 
 		UserGameStatsId userGameStatsId = new UserGameStatsId(userId, gameId); // Register an id with winner info
 		Game game = gameRepository.findById(gameId).orElseThrow();
 		boolean isBasedOnTurn = game.isScoreBasedOnTurn();
 
-		// If no stat line for this player and this game :
 		if (userGameStatsRepository.findById(userGameStatsId).isEmpty()) {
 			UserGameStats userGameStats = new UserGameStats();
-			userGameStats.setId(userGameStatsId);
-			userGameStats.setUser(userRepository.findById(userId).orElseThrow());
+			// userGameStats.setId(userGameStatsId);
 			userGameStats.setGame(game);
 			userGameStats.setBestScore(result);
+			userGameStats.setUser(userRepository.findById(userId).orElseThrow());
 			userGameStatsRepository.save(userGameStats);
 		} else {
-			// else fetch the current best score and compare the best one / and worst too
 			userGameStatsRepository.findById(userGameStatsId).ifPresent(userGameStats -> {
-
-				// Compute the worst/best score
 				Util.saveScoresToStats(userGameStats, result, isBasedOnTurn);
-
-				// Save data
 				userGameStatsRepository.save(userGameStats);
 			});
+		}
+
+		// Secondary score (Scram only) — independent of whether the primary
+		// stat line above was new or already existed.
+		if (resultSecondary.isPresent()) {
+			Integer resultInflicted = resultSecondary.get();
+
+			if (userGameSecondaryStatsRepository.findById(userGameStatsId).isEmpty()) {
+				UserGameSecondaryStats userGameSecondaryStats = new UserGameSecondaryStats();
+				// userGameSecondaryStats.setId(userGameStatsId);
+				userGameSecondaryStats.setGame(game);
+				userGameSecondaryStats.setBestScore(resultInflicted);
+				userGameSecondaryStats.setUser(userRepository.findById(userId).orElseThrow());
+				userGameSecondaryStatsRepository.save(userGameSecondaryStats);
+			} else {
+				userGameSecondaryStatsRepository.findById(userGameStatsId).ifPresent(userGameSecondaryStats -> {
+					Util.saveScoresToStats(userGameSecondaryStats, resultInflicted, isBasedOnTurn);
+					userGameSecondaryStatsRepository.save(userGameSecondaryStats);
+				});
+			}
 		}
 
 		return "redirect:/dart/play";

@@ -235,6 +235,36 @@ body {
     font-size: 0.85rem;
 }
 
+.stat-values-split {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+    flex-shrink: 0;
+}
+
+.stat-role-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.stat-role-tag.stat-role-stopper {
+    background: var(--green);
+}
+
+.stat-role-tag.stat-role-attacker {
+    background: var(--red);
+}
+
 .btn-fab {
     display: inline-flex;
     align-items: center;
@@ -1126,6 +1156,10 @@ body {
     cursor: not-allowed;
 }
 
+.clock-box:not(:disabled):active {
+    transform: translateY(1px);
+}
+
 .clock-expand {
     display: block;
     width: 100%;
@@ -1163,6 +1197,10 @@ body {
     border-radius: 50%;
     background: #1a1d23;
     cursor: pointer;
+}
+
+.baseball-ball-btn:not(:disabled):active {
+    transform: translateY(1px);
 }
 
 .baseball-ball-btn:disabled {
@@ -1285,20 +1323,11 @@ body {
     opacity: 0.8;
 }
 
-.purple-zone.tapped {
-    animation: purple-zone-tap 0.3s ease;
-}
-
-@keyframes purple-zone-tap {
-    0% {
-        opacity: 1;
-    }
-    35% {
-        opacity: 0.25;
-    }
-    100% {
-        opacity: 1;
-    }
+/* Wedges sit edge-to-edge, so a translateY press (like the button classes
+   below use) would visibly misalign neighboring zones — plain opacity dim
+   on press instead, same idea as :active elsewhere in the app. */
+.purple-zone:active {
+    opacity: 0.6;
 }
 
 .purple-board-label {
