@@ -1472,6 +1472,84 @@ body {
     border-color: var(--red);
 }
 
+/* Ozone: named zones, shared and always visible — each starts neutral
+   (dark), turns green once the CURRENT active player owns it, red once the
+   opponent does. One tap takes a zone outright — the app doesn't track or
+   show dart-by-dart progress toward it. */
+
+.ozone-zones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.ozone-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.7rem 1rem;
+    border: 3px solid var(--border);
+    border-radius: 10px;
+    background: #1a1d23;
+    cursor: pointer;
+}
+
+.ozone-zone:disabled {
+    cursor: not-allowed;
+}
+
+.ozone-zone.ozone-mine {
+    background: #14301f;
+    border-color: var(--green);
+}
+
+.ozone-zone.ozone-theirs {
+    background: #301414;
+    border-color: var(--red);
+}
+
+.ozone-zone-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+
+.ozone-zone-range {
+    font-size: 0.8rem;
+    color: #9aa5a0;
+}
+
+/* Ozone +3 joueurs only: elimination status + the one-time Killian sauveur
+   bonus turn banner. No-ops/stays hidden entirely for the classic 1v1 game. */
+
+.ozone-panel.ozone-eliminated {
+    opacity: 0.35;
+    border-color: var(--red-dark);
+}
+
+.ozone-status {
+    margin: 0.3rem 0 0;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.ozone-sauveur-banner {
+    margin: 0;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gold);
+}
+
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */
 @media (min-width: 600px) {
     body {

@@ -218,6 +218,8 @@ public class MainController {
 		model.addAttribute("game", game);
 		model.addAttribute("players", players);
 
+		final String scram = "game-scram";
+
 		switch (gameId) {
 		case CRICKET_CODE -> {
 			model.addAttribute(VARIANT, "cricket");
@@ -239,18 +241,23 @@ public class MainController {
 		}
 		case SCRAM_CODE -> {
 			model.addAttribute(VARIANT, "scram");
-			return "game-scram";
+			return scram;
 		}
 		case SCRAM_4P_CODE -> {
 			model.addAttribute(VARIANT, "scram-2v2");
-			return "game-scram";
+			return scram;
 		}
 		case SCRAM_3P_CODE -> {
 			model.addAttribute(VARIANT, "scram-2v1");
-			return "game-scram";
+			return scram;
 		}
 		case OZONE_CODE -> {
-			// TODO
+			model.addAttribute(VARIANT, "ozone");
+			return "game-ozone";
+		}
+		case OZONE_3P_CODE -> {
+			model.addAttribute(VARIANT, "ozone-3p");
+			return "game-ozone";
 		}
 		case BASEBALL_CODE -> {
 			model.addAttribute(VARIANT, "baseball");

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{generic/page-head :: pageHead(${game.name} + ' - Custom Dart Games')}"></head>
+<body>
+<main class="game-screen" th:attr="data-variant=${variant}">
+    <div th:replace="~{generic/back-link :: backLink(@{/dart/play}, 'Retour à la sélection du jeu', true)}"></div>
+
+    <!----------------------------    ZONES  ------------------------------------------>
+
+    <p class="ozone-sauveur-banner" data-role="sauveur-banner" hidden></p>
+
+    <div class="ozone-zones" data-role="ozone-zones">
+        <button type="button" class="ozone-zone"
+                th:each="zone, iter : ${ {'La Fontaine Saint-Martin','Mansigné','Cérans-Foulletourte','Le Mans','Oizé','3 Monts'} }"
+                th:attr="data-index=${iter.index}">
+            <span class="ozone-zone-name" th:text="${zone}">Zone</span>
+            <span class="ozone-zone-range" data-role="range"></span>
+        </button>
+    </div>
+
+    <!----------------------------    ZONES  ------------------------------------------>
+
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+    <div class="players-stack" id="players-stack">
+        <section class="player-panel ozone-panel" th:each="player, iter : ${players}"
+                 th:classappend="${iter.index == 0} ? ' active' : ''"
+                 th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
+            <div class="player-panel-header">
+                <span data-role="turns">Tours : 0</span>
+                <span class="player-name" th:text="${player.username}">Name</span>
+            </div>
+            <p class="ozone-status" data-role="status" hidden>Éliminé</p>
+        </section>
+    </div>
+
+    <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+    <div th:replace="~{generic/turn-actions :: turnActions}"></div>
+
+    <!----------------------------    TURN ACTIONS OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+    <div th:replace="~{generic/win-overlay :: winOverlay}"></div>
+
+    <!----------------------------    WIN OVERLAY  ------------------------------------------>
+
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+    <div th:replace="~{generic/exit-overlay :: exitOverlay}"></div>
+
+    <!----------------------------    EXIT OVERLAY  ----------------------------------------->
+
+</main>
+<script th:src="@{/js/game-common.js}" defer></script>
+<script th:src="@{/js/game-turn-engine.js}" defer></script>
+<script th:src="@{/js/game-ozone-common.js}" defer></script>
+</body>
+</html>
