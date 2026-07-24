@@ -162,7 +162,7 @@ public class MainController {
 		// Secured parameters
 		switch (gameId) {
 		// if playerNumber > 6 or playerNumber < 1
-		case CRICKET_CODE, CRICKET_HONOR_CODE, PURPLE_STAIN_CODE, KILLER_CODE, OZONE_3P_CODE -> {
+		case CRICKET_CODE, CRICKET_HONOR_CODE, PURPLE_STAIN_CODE, KILLER_CODE -> {
 			if (playerNumber > SIX_PLAYERS || playerNumber < ZERO_PLAYER) {
 				return redirectionUrl + SIX_PLAYERS; // redirect to 6 players
 			}
@@ -178,14 +178,22 @@ public class MainController {
 				return redirectionUrl + TWO_PLAYERS; // redirect to 2 players
 			}
 		}
+		case OZONE_3P_CODE -> {
+			model.addAttribute("minPlayers", 3);
+			if (playerNumber > SIX_PLAYERS || playerNumber < ZERO_PLAYER) {
+				return redirectionUrl + SIX_PLAYERS; // redirect to 6 players
+			}
+		}
 		case SCRAM_3P_CODE -> {
 			model.addAttribute("stopperCount", 1);
+			model.addAttribute("minPlayers", 3);
 			if (playerNumber != THREE_PLAYERS) {
 				return redirectionUrl + THREE_PLAYERS; // redirect to 3 players
 			}
 		}
 		case SCRAM_4P_CODE -> {
 			model.addAttribute("stopperCount", 2);
+			model.addAttribute("minPlayers", 4);
 			if (playerNumber != FOUR_PLAYERS) {
 				return redirectionUrl + FOUR_PLAYERS; // redirect to 4 players
 			}
@@ -276,6 +284,9 @@ public class MainController {
 		}
 		case PURPLE_STAIN_CODE -> {
 			return "game-purple-stain";
+		}
+		case KILLER_CODE -> {
+			return "game-killer";
 		}
 		}
 		return "redirect:/dart/play";

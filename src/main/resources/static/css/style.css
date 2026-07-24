@@ -1550,6 +1550,73 @@ body {
     color: var(--gold);
 }
 
+/* Killer: reuses Purple Stain's dartboard wholesale — same geometry, same
+   colors (.purple-board / .purple-board-label) — just with every ring of a
+   given number sharing one data-zone, so a tap anywhere in "20" hits camp
+   20 regardless of which ring. The board never reveals who owns which camp
+   (green/red-coding it would leak that), so .killer-zone only carries the
+   same press feedback as .purple-zone; the one addition is dimming a camp
+   out during phase 1 once it's claimed, without saying by whom. */
+
+.killer-zone {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.killer-zone:hover {
+    opacity: 0.8;
+}
+
+.killer-zone:active {
+    opacity: 0.6;
+}
+
+.killer-zone.killer-zone-disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.35;
+}
+
+.killer-panel-body {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.4rem;
+}
+
+.killer-tag {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 2px solid var(--gold);
+    color: var(--gold);
+}
+
+.killer-hint {
+    margin: 0.3rem 0 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #9aa5a0;
+}
+
+.killer-status {
+    margin: 0.2rem 0 0;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.killer-panel.killer-eliminated {
+    opacity: 0.35;
+    border-color: var(--red-dark);
+}
+
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */
 @media (min-width: 600px) {
     body {

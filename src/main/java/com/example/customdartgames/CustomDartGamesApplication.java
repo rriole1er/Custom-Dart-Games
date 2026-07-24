@@ -153,7 +153,7 @@ public class CustomDartGamesApplication { // main entry
 				Game killer = new Game();
 				killer.setName("Killer");
 				killer.setDescription(
-						"Chaque joueur commence par lancer une fléchette avec sa main non dominante afin de déterminer son secteur, appelé « camp ». Une fois tous les camps attribués, chaque joueur doit marquer un double dans son propre camp pour devenir « killer ». Il peut alors viser les camps des autres joueurs pour les « tuer », en y touchant à son tour un double.");
+						"Chaque joueur commence par lancer une fléchette avec sa main non dominante afin de déterminer son secteur, appelé « camp ». Une fois tous les camps attribués, chaque joueur doit marquer un double dans son propre camp pour devenir « killer ». Il peut alors viser les camps des autres joueurs pour les « tuer », en y touchant à son tour un double dans leurs camps. S'il réussit, alors le joueur est éliminé ");
 				killer.setScoreBasedOnTurn(true);
 				gameRepository.save(killer);
 			}
