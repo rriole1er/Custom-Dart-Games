@@ -153,3 +153,7 @@ Tables are created/updated automatically (`spring.jpa.hibernate.ddl-auto=update`
 - `resources/static/css`, single stylesheet, mobile-first (unprefixed rules are the small-screen baseline, `@media (min-width: 600px)` layers on larger screens).
 
 There is no `src/test` directory yet, no test task to run.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
