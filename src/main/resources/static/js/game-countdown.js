@@ -44,6 +44,90 @@ document.addEventListener('DOMContentLoaded', function () {
     // whatever hasn't been committed yet.
     var history = [];
 
+    // Refresh survival (see game-turn-engine.js for the same idea applied to
+    // every other game): every committed turn is saved to localStorage,
+    // keyed by the page title + the exact set of player ids so a reload of
+    // THIS in-progress game finds it again without bleeding into an
+    // unrelated one. Mid-turn buffer/segmentTaps aren't saved, matching
+    // this file's own choice above not to undo-track them either — only
+    // committed state is worth surviving a refresh for.
+    var storageKey = 'dartGameState:' + document.title + ':' + players.map(function (p) {
+        return p.id;
+    }).join(',');
+
+    // A save older than this is more likely an abandoned game (tab closed
+    // without confirming exit, browser killed in the background) than one
+    // worth resuming — past this age, restore() ignores and clears it
+    // rather than risk resurrecting last week's match onto today's replay
+    // of the same lineup.
+    var MAX_SAVE_AGE_MS = 24 * 60 * 60 * 1000;
+
+    function persist() {
+        if (gameOver) {
+            try {
+                localStorage.removeItem(storageKey);
+            } catch (e) {
+                // Storage unavailable — nothing to clean up either way.
+            }
+            return;
+        }
+        try {
+            localStorage.setItem(storageKey, JSON.stringify({
+                savedAt: Date.now(),
+                activeIndex: activeIndex,
+                history: history,
+                playersNow: players.map(function (p) {
+                    return {
+                        remaining: p.remaining,
+                        turns: p.turns,
+                        totalScored: p.totalScored,
+                        checkoutVariant: p.checkoutVariant
+                    };
+                })
+            }));
+        } catch (e) {
+            // Storage full or unavailable — the game keeps working, it just won't survive a refresh.
+        }
+    }
+
+    function restore() {
+        var raw;
+        try {
+            raw = localStorage.getItem(storageKey);
+        } catch (e) {
+            return false;
+        }
+        if (!raw) {
+            return false;
+        }
+        var saved;
+        try {
+            saved = JSON.parse(raw);
+        } catch (e) {
+            return false;
+        }
+        if (!saved.playersNow || saved.playersNow.length !== players.length) {
+            return false;
+        }
+        if (!saved.savedAt || Date.now() - saved.savedAt > MAX_SAVE_AGE_MS) {
+            try {
+                localStorage.removeItem(storageKey);
+            } catch (e) {
+                // Storage unavailable — nothing to clean up either way.
+            }
+            return false;
+        }
+        activeIndex = saved.activeIndex;
+        history = saved.history;
+        saved.playersNow.forEach(function (entry, index) {
+            players[index].remaining = entry.remaining;
+            players[index].turns = entry.turns;
+            players[index].totalScored = entry.totalScored;
+            players[index].checkoutVariant = entry.checkoutVariant;
+        });
+        return true;
+    }
+
     // Segments usable before the final dart of a checkout: triples then singles,
     // sorted highest-value first so findFinish() tries the biggest scores first
     // (a greedy search, not an exhaustive one — see its comment below).
@@ -145,6 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
             player.panel.classList.toggle('active', index === activeIndex && !gameOver);
             render(player);
         });
+        persist();
     }
 
     function updateDisplay() {
@@ -185,6 +270,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showGameOver(player) {
         gameOver = true;
+        // commitTurn() already called renderAll() for this turn just before
+        // gameOver flipped true, so persist() ran while it still read false
+        // and saved instead of clearing — clear it explicitly here instead
+        // of relying on another renderAll() that never comes.
+        persist();
         backLink.hidden = true;
         keypadPanel.hidden = true;
         player.panel.classList.add('winner');
@@ -320,5 +410,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    restore();
     renderAll();
 });

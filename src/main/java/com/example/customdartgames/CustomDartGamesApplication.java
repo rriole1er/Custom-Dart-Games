@@ -139,7 +139,7 @@ public class CustomDartGamesApplication { // main entry
 				Game geoJura = new Game();
 				geoJura.setName("Geo Jura");
 				geoJura.setDescription(
-						"Ce jeu consiste à tester les connaissances géographiques des départements français. Chaque joueur lance à tour de rôle ses 3 fléchettes : la somme des 3 valeurs obtenues correspond au numéro d'un département, qu'il faut nommer. Si un adversaire trouve le bon département, il marque 1 point. Le premier joueur à atteindre 10 points gagne.");
+						"Ce jeu consiste à tester les connaissances géographiques des départements français. Chaque joueur lance à tour de rôle ses 3 fléchettes : la somme des 3 valeurs obtenues correspond au numéro d'un département, qu'il faut nommer. Une carte vierge de la france s'affiche, avec les departements pré-coupés.  Si un adversaire écrit le bon département, il marque 1 point, et s'il place le departement sur la carte un autre point. Le premier joueur à atteindre 10 points gagne la partie.");
 				geoJura.setScoreBasedOnTurn(true);
 				gameRepository.save(geoJura);
 

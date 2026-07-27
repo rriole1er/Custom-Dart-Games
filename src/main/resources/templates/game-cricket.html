@@ -13,6 +13,8 @@
 <main class="game-screen" th:attr="data-variant=${variant}">
     <div th:replace="~{generic/back-link :: backLink(@{/dart/play}, 'Retour à la sélection du jeu', true)}"></div>
 
+    <h1 class="game-title" th:text="${game.name}">Game</h1>
+
     <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
 
     <div class="players-stack" id="players-stack">

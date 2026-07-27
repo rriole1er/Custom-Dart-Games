@@ -282,6 +282,9 @@ public class MainController {
 			model.addAttribute(VARIANT, "fast-clock");
 			return "game-clock";
 		}
+		case GEO_JURA_CODE -> {
+			return "game-geo-jura";
+		}
 		case PURPLE_STAIN_CODE -> {
 			return "game-purple-stain";
 		}

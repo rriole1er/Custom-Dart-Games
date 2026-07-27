@@ -1617,6 +1617,143 @@ body {
     border-color: var(--red-dark);
 }
 
+/* Geo Jura: players/score at top (.geo-panel, reusing .player-score),
+   then the target department number, a free-text name guess, and the map
+   itself — a plain, uniformly-colored France (no zone ever hints which one
+   is the answer) that only turns green once correctly tapped — and the
+   dart keypad at the bottom, reusing Countdown's segment keypad chrome
+   (.keypad-panel / .keypad-display / .keypad-breakdown / .keypad-btn-
+   segment) as-is. Only one of {keypad, name guess, map} is ever visible at
+   once — see the phase machine in game-geo-jura.js. */
+
+.geo-target-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+}
+
+.geo-target-banner {
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.geo-name-form {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.geo-name-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+    border: 3px solid var(--border);
+    border-radius: 8px;
+    background: #1a1d23;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.geo-name-input:disabled {
+    opacity: 0.5;
+}
+
+.geo-name-input-wrong {
+    border-color: var(--red);
+}
+
+.geo-name-form .btn-block {
+    width: auto;
+    padding: 0.6rem 1rem;
+}
+
+.geo-confirm-darts-btn {
+    margin-top: 0.6rem;
+}
+
+.geo-map-toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.6rem;
+}
+
+/* Departments are small and tightly packed — a flat tap often can't tell
+   two neighbors apart, so the wrap scrolls both ways and the +/- buttons
+   grow the map past its container's width/height (aspect-ratio keeps both
+   growing together), turning what was a fixed board into a pannable one. */
+.geo-map-wrap {
+    width: 100%;
+    max-width: 480px;
+    max-height: 70vh;
+    margin: 0.6rem auto 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.geo-map {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1000 / 960;
+}
+
+.geo-map.geo-map-zoom-2 {
+    width: 160%;
+}
+
+.geo-map.geo-map-zoom-3 {
+    width: 220%;
+}
+
+.geo-dept {
+    fill: #6f9c76;
+    stroke: #ffffff;
+    stroke-width: 0.5;
+    cursor: pointer;
+    transition: opacity 0.15s ease, fill 0.15s ease;
+}
+
+.geo-dept:hover {
+    opacity: 0.85;
+}
+
+.geo-dept:active {
+    opacity: 0.7;
+}
+
+.geo-dept-correct {
+    fill: var(--green);
+}
+
+.geo-dept-wrong {
+    fill: var(--red);
+}
+
+.geo-panel-tags {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.geo-tag {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 2px solid var(--gold);
+    color: var(--gold);
+}
+
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */
 @media (min-width: 600px) {
     body {

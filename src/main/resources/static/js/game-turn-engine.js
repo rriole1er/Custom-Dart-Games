@@ -10,6 +10,18 @@
 // its own board; this engine owns whose turn it is, both undo stacks, and
 // declaring a winner.
 //
+// It also owns surviving a page refresh: every repaint saves whose turn it
+// is, both undo stacks, and every player's own current state (read fresh via
+// captureState — the same function the undo stacks already use to snapshot
+// "state as of some past moment", just called here for "state right now"
+// instead) to localStorage, keyed by the page title + the exact set of
+// player ids so a reload of the SAME in-progress game finds it again but an
+// unrelated game (different game, or same game with a different lineup)
+// doesn't. A finished game clears its own save immediately — there's
+// nothing left to resume once someone's won, and game-common.js's exit
+// confirmation clears it too, so intentionally leaving a game behind
+// doesn't leave a stale save for a future game to accidentally pick back up.
+//
 // config:
 //   players              - array of player objects; each needs .panel and .turns
 //   captureState(player) - returns a plain snapshot of that game's own fields
@@ -84,6 +96,91 @@ function createTurnEngine(config) {
     var clickHistory = [];
     var pendingSnapshot = null;
 
+    // Shared prefix so game-common.js's exit confirmation can wipe any save
+    // without knowing this game's exact key; the rest identifies THIS game
+    // instance specifically, so a stale save never bleeds into an unrelated
+    // game or a different lineup of the same game.
+    var storageKey = 'dartGameState:' + document.title + ':' + players.map(function (p) {
+        return p.id;
+    }).join(',');
+
+    // A save older than this is more likely an abandoned game (tab closed
+    // without confirming exit, browser killed in the background) than one
+    // worth resuming — past this age, restore() ignores and clears it
+    // rather than risk resurrecting last week's match onto today's replay
+    // of the same lineup.
+    var MAX_SAVE_AGE_MS = 24 * 60 * 60 * 1000;
+
+    function persist() {
+        if (gameOver) {
+            try {
+                localStorage.removeItem(storageKey);
+            } catch (e) {
+                // Storage unavailable (private browsing, disabled) — nothing to clean up either way.
+            }
+            return;
+        }
+        try {
+            localStorage.setItem(storageKey, JSON.stringify({
+                savedAt: Date.now(),
+                activeIndex: activeIndex,
+                focusedIndex: focusedIndex,
+                clicksThisTurn: clicksThisTurn,
+                history: history,
+                clickHistory: clickHistory,
+                pendingSnapshot: pendingSnapshot,
+                playersNow: players.map(function (p) {
+                    return {turns: p.turns, state: captureState(p)};
+                })
+            }));
+        } catch (e) {
+            // Storage full or unavailable — the game keeps working, it just won't survive a refresh.
+        }
+    }
+
+    // Returns true once a matching save was found and applied — the caller
+    // skips its own fresh beginTurn() in that case, since restoring already
+    // put activeIndex/history/pendingSnapshot exactly where they were.
+    function restore() {
+        var raw;
+        try {
+            raw = localStorage.getItem(storageKey);
+        } catch (e) {
+            return false;
+        }
+        if (!raw) {
+            return false;
+        }
+        var saved;
+        try {
+            saved = JSON.parse(raw);
+        } catch (e) {
+            return false;
+        }
+        if (!saved.playersNow || saved.playersNow.length !== players.length) {
+            return false;
+        }
+        if (!saved.savedAt || Date.now() - saved.savedAt > MAX_SAVE_AGE_MS) {
+            try {
+                localStorage.removeItem(storageKey);
+            } catch (e) {
+                // Storage unavailable — nothing to clean up either way.
+            }
+            return false;
+        }
+        activeIndex = saved.activeIndex;
+        focusedIndex = saved.focusedIndex;
+        clicksThisTurn = saved.clicksThisTurn;
+        history = saved.history;
+        clickHistory = saved.clickHistory;
+        pendingSnapshot = saved.pendingSnapshot;
+        saved.playersNow.forEach(function (entry, index) {
+            players[index].turns = entry.turns;
+            applyState(players[index], entry.state);
+        });
+        return true;
+    }
+
     function beginTurn() {
         var player = players[activeIndex];
         pendingSnapshot = {
@@ -102,6 +199,7 @@ function createTurnEngine(config) {
         undoBtn.disabled = history.length === 0;
         undoClickBtn.disabled = clickHistory.length === 0;
         gameRender({activeIndex: activeIndex, focusedIndex: focusedIndex, gameOver: gameOver});
+        persist();
     }
 
     function setFocused(index) {
@@ -211,7 +309,9 @@ function createTurnEngine(config) {
 
     doneBtn.addEventListener('click', commitTurn);
 
-    beginTurn();
+    if (!restore()) {
+        beginTurn();
+    }
     renderAll();
 
     return {
