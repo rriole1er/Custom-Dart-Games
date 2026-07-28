@@ -40,12 +40,4 @@ public class User {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-
-	public Set<UserGameStats> getUserGameStats() {
-		return userGameStats;
-	}
-
-	public void setUserGameStats(Set<UserGameStats> userGameStats) {
-		this.userGameStats = userGameStats;
-	}
 }

@@ -258,10 +258,7 @@
         <section class="player-panel purple-panel" th:each="player, iter : ${players}"
                  th:classappend="${iter.index == 0} ? ' active' : ''"
                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
-            <div class="player-panel-header">
-                <span data-role="turns">Tours : 0</span>
-                <span class="player-name" th:text="${player.username}">Name</span>
-            </div>
+            <div th:replace="~{generic/player-panel-header :: playerPanelHeader('Tours : 0', false)}"></div>
 
             <div class="purple-turn-action">
                 <p class="purple-hint" data-role="hint" hidden>Définis la zone à viser sur la cible ci-dessus</p>

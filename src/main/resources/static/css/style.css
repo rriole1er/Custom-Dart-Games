@@ -41,9 +41,7 @@ body {
     padding: 1.25rem 0.75rem;
     font-family: var(--font-body);
     color: var(--ink);
-    background: repeating-radial-gradient(circle at center, transparent 0, transparent 60px, rgba(255, 255, 255, 0.03) 62px, transparent 64px),
-    radial-gradient(circle at center, var(--bg-glow) 0%, var(--bg-dark) 75%);
-    background-attachment: fixed;
+    background: repeating-radial-gradient(circle at center, transparent 0, transparent 60px, rgba(255, 255, 255, 0.03) 62px, transparent 64px) radial-gradient(circle at center, var(--bg-glow) 0%, var(--bg-dark) 75%) fixed;
 }
 
 .board {
@@ -112,12 +110,14 @@ body {
     box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
 }
 
-.btn-oval:hover {
+.btn-oval:hover,
+.btn-block:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 0 rgba(0, 0, 0, 0.35);
 }
 
-.btn-oval:active {
+.btn-oval:active,
+.btn-block:active {
     transform: translateY(2px);
     box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
 }
@@ -256,11 +256,13 @@ body {
     font-size: 0.75rem;
 }
 
-.stat-role-tag.stat-role-stopper {
+.stat-role-tag.stat-role-stopper,
+.chip-role.chip-role-stopper {
     background: var(--green);
 }
 
-.stat-role-tag.stat-role-attacker {
+.stat-role-tag.stat-role-attacker,
+.chip-role.chip-role-attacker {
     background: var(--red);
 }
 
@@ -350,16 +352,6 @@ body {
     cursor: pointer;
     box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.btn-block:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.35);
-}
-
-.btn-block:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
 }
 
 .btn-block:disabled {
@@ -484,14 +476,6 @@ body {
     display: inline-flex;
 }
 
-.chip-role.chip-role-stopper {
-    background: var(--green);
-}
-
-.chip-role.chip-role-attacker {
-    background: var(--red);
-}
-
 .player-chip:has(input:disabled) {
     opacity: 0.45;
     cursor: not-allowed;
@@ -499,27 +483,6 @@ body {
 
 .player-chip input:disabled {
     cursor: not-allowed;
-}
-
-.link-back {
-    display: block;
-    text-align: center;
-    color: #555;
-    text-decoration: none;
-    font-size: 0.9rem;
-    margin-bottom: 0.75rem;
-}
-
-.link-back:hover {
-    text-decoration: underline;
-}
-
-.link-back.on-dark {
-    color: #9aa5a0;
-}
-
-.link-back.on-dark:hover {
-    color: #fff;
 }
 
 .link-back-icon {
@@ -538,7 +501,8 @@ body {
     text-decoration: none;
 }
 
-.link-back-icon:hover {
+.link-back-icon:hover,
+.icon-btn:hover {
     background: #ece5d4;
 }
 
@@ -573,10 +537,6 @@ body {
     font-weight: 800;
     line-height: 1;
     text-decoration: none;
-}
-
-.icon-btn:hover {
-    background: #ece5d4;
 }
 
 .rules-list {
@@ -890,23 +850,6 @@ body {
     background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
     text-transform: uppercase;
     font-size: 0.95rem;
-}
-
-.link-undo {
-    display: block;
-    width: 100%;
-    margin-top: 0.75rem;
-    padding: 0.4rem;
-    border: none;
-    background: none;
-    color: #9aa5a0;
-    text-decoration: underline;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.link-undo:hover {
-    color: #fff;
 }
 
 .game-over-overlay {
@@ -1341,7 +1284,9 @@ body {
     margin-top: 0.6rem;
 }
 
-.purple-panel.purple-eliminated {
+.purple-panel.purple-eliminated,
+.ozone-panel.ozone-eliminated,
+.killer-panel.killer-eliminated {
     opacity: 0.35;
     border-color: var(--red-dark);
 }
@@ -1526,11 +1471,6 @@ body {
 /* Ozone +3 joueurs only: elimination status + the one-time Killian sauveur
    bonus turn banner. No-ops/stays hidden entirely for the classic 1v1 game. */
 
-.ozone-panel.ozone-eliminated {
-    opacity: 0.35;
-    border-color: var(--red-dark);
-}
-
 .ozone-status {
     margin: 0.3rem 0 0;
     text-align: center;
@@ -1611,11 +1551,6 @@ body {
     letter-spacing: 0.03em;
 }
 
-.killer-panel.killer-eliminated {
-    opacity: 0.35;
-    border-color: var(--red-dark);
-}
-
 /* Geo Jura: players/score at top (.geo-panel, reusing .player-score),
    then the target department number, a free-text name guess, and the map
    itself — a plain, uniformly-colored France (no zone ever hints which one
@@ -1683,6 +1618,15 @@ body {
     margin-top: 0.6rem;
 }
 
+.geo-zoom-paris-btn {
+    width: auto;
+    height: 44px;
+    padding: 0 1rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
 /* Departments are small and tightly packed — a flat tap often can't tell
    two neighbors apart, so the wrap scrolls both ways and the +/- buttons
    grow the map past its container's width/height (aspect-ratio keeps both
@@ -1710,6 +1654,14 @@ body {
     width: 220%;
 }
 
+.geo-map.geo-map-zoom-paris {
+    width: 700%;
+}
+
+.geo-map.geo-map-zoom-paris-2 {
+    width: 1100%;
+}
+
 .geo-dept {
     fill: #6f9c76;
     stroke: #ffffff;
@@ -1732,25 +1684,6 @@ body {
 
 .geo-dept-wrong {
     fill: var(--red);
-}
-
-.geo-panel-tags {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 0.4rem;
-}
-
-.geo-tag {
-    font-family: var(--font-display);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    border: 2px solid var(--gold);
-    color: var(--gold);
 }
 
 /* Tablet and up: more breathing room, bigger type, multi-column leaderboard. */

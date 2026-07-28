@@ -1,9 +1,4 @@
-// Shared multi-player turn/undo engine for the "tap a panel to focus it,
-// click boxes to act, Terminer to pass the turn" boards — Cricket (via
-// game-cricket-common.js) and the Game Clock (game-clock.js). Both need the
-// exact same two-level undo: a per-turn stack that can walk back through
-// completed turns, plus a per-click stack scoped to the turn in progress (fix
-// a misclick without losing the whole turn) — and the same active/focused
+// Shared multi-player turn/undo engine. Same active/focused
 // panel bookkeeping, win/undo chrome, and DOM contract (data-action="undo" /
 // "undo-click" / "done", data-role="back-link" / "game-over"). A game only
 // supplies how to capture/restore ITS OWN per-player fields and how to paint
@@ -11,16 +6,8 @@
 // declaring a winner.
 //
 // It also owns surviving a page refresh: every repaint saves whose turn it
-// is, both undo stacks, and every player's own current state (read fresh via
-// captureState — the same function the undo stacks already use to snapshot
-// "state as of some past moment", just called here for "state right now"
-// instead) to localStorage, keyed by the page title + the exact set of
-// player ids so a reload of the SAME in-progress game finds it again but an
-// unrelated game (different game, or same game with a different lineup)
-// doesn't. A finished game clears its own save immediately — there's
-// nothing left to resume once someone's won, and game-common.js's exit
-// confirmation clears it too, so intentionally leaving a game behind
-// doesn't leave a stale save for a future game to accidentally pick back up.
+// is, both undo stacks, and every player's own current state to localStorage,
+// A finished game clears its own save immediately
 //
 // config:
 //   players              - array of player objects; each needs .panel and .turns
@@ -62,13 +49,26 @@
 // for a game whose whole turn is a single atomic action (e.g. Purple Stain's
 // one dart to define the target zone) instead of accumulating several clicks
 // before the player presses done themselves.
-function createTurnEngine(config) {
-    var players = config.players;
-    var captureState = config.captureState;
-    var applyState = config.applyState;
-    var gameRender = config.render;
-    var maxClicksPerTurn = config.maxClicksPerTurn || 9;
 
+// Round-robin skip for games where eliminated players stay in the fixed
+// `players` array (undo needs them there) but never get another turn — pass
+// as `nextActiveIndex: function (i) { return nextAliveIndex(i, players); }`.
+function nextAliveIndex(activeIndex, players) {
+    let next = activeIndex;
+    do {
+        next = (next + 1) % players.length;
+    } while (!players[next].alive);
+    return next;
+}
+
+function createTurnEngine(config) {
+    const players = config.players;
+    const captureState = config.captureState;
+    const applyState = config.applyState;
+    const gameRender = config.render;
+    const maxClicksPerTurn = config.maxClicksPerTurn || 9;
+
+    // Click cap for the current turn; a fixed number or a per-role function.
     function resolveMaxClicksPerTurn() {
         if (typeof maxClicksPerTurn === 'function') {
             return maxClicksPerTurn(activeIndex);
@@ -76,53 +76,34 @@ function createTurnEngine(config) {
         return maxClicksPerTurn;
     }
 
-    var backLink = document.querySelector('[data-role="back-link"]');
-    var doneBtn = document.querySelector('[data-action="done"]');
-    var undoBtn = document.querySelector('[data-action="undo"]');
-    var undoClickBtn = document.querySelector('[data-action="undo-click"]');
-    var gameOverOverlay = document.querySelector('[data-role="game-over"]');
+    const backLink = document.querySelector('[data-role="back-link"]');
+    const doneBtn = document.querySelector('[data-action="done"]');
+    const undoBtn = document.querySelector('[data-action="undo"]');
+    const undoClickBtn = document.querySelector('[data-action="undo-click"]');
+    const gameOverOverlay = document.querySelector('[data-role="game-over"]');
 
-    var activeIndex = 0;
-    var focusedIndex = 0;
-    var clicksThisTurn = 0;
-    var gameOver = false;
+    let activeIndex = 0;
+    let focusedIndex = 0;
+    let clicksThisTurn = 0;
+    let gameOver = false;
 
     // `history`: one snapshot per completed turn — "Annuler le tour" pops it.
-    // `clickHistory`: one snapshot per click since the turn began — "Annuler"
-    // pops just the last click. `pendingSnapshot` is the active player's state
-    // as it was at the start of the turn, so "Annuler le tour" can discard
-    // mid-turn progress even once `clickHistory` itself has been emptied.
-    var history = [];
-    var clickHistory = [];
-    var pendingSnapshot = null;
+    let history = [];
+    let clickHistory = [];
+    let pendingSnapshot = null;
 
     // Shared prefix so game-common.js's exit confirmation can wipe any save
     // without knowing this game's exact key; the rest identifies THIS game
     // instance specifically, so a stale save never bleeds into an unrelated
     // game or a different lineup of the same game.
-    var storageKey = 'dartGameState:' + document.title + ':' + players.map(function (p) {
+    const storageKey = dartGameStorageKey(players.map(function (p) {
         return p.id;
-    }).join(',');
+    }));
 
-    // A save older than this is more likely an abandoned game (tab closed
-    // without confirming exit, browser killed in the background) than one
-    // worth resuming — past this age, restore() ignores and clears it
-    // rather than risk resurrecting last week's match onto today's replay
-    // of the same lineup.
-    var MAX_SAVE_AGE_MS = 24 * 60 * 60 * 1000;
-
-    function persist() {
-        if (gameOver) {
-            try {
-                localStorage.removeItem(storageKey);
-            } catch (e) {
-                // Storage unavailable (private browsing, disabled) — nothing to clean up either way.
-            }
-            return;
-        }
-        try {
-            localStorage.setItem(storageKey, JSON.stringify({
-                savedAt: Date.now(),
+    // A save older than this is more likely an abandoned game (24h)
+    const persistence = createPersistence(storageKey, 24 * 60 * 60 * 1000,
+        function () {
+            return {
                 activeIndex: activeIndex,
                 focusedIndex: focusedIndex,
                 clicksThisTurn: clicksThisTurn,
@@ -132,57 +113,40 @@ function createTurnEngine(config) {
                 playersNow: players.map(function (p) {
                     return {turns: p.turns, state: captureState(p)};
                 })
-            }));
-        } catch (e) {
-            // Storage full or unavailable — the game keeps working, it just won't survive a refresh.
-        }
+            };
+        },
+        function (saved) {
+            if (!saved.playersNow || saved.playersNow.length !== players.length) {
+                return false;
+            }
+            activeIndex = saved.activeIndex;
+            focusedIndex = saved.focusedIndex;
+            clicksThisTurn = saved.clicksThisTurn;
+            history = saved.history;
+            clickHistory = saved.clickHistory;
+            pendingSnapshot = saved.pendingSnapshot;
+            saved.playersNow.forEach(function (entry, index) {
+                players[index].turns = entry.turns;
+                applyState(players[index], entry.state);
+            });
+            return true;
+        });
+
+    // Saves engine + player state, or clears it once the game is over.
+    function persist() {
+        persistence.persist(gameOver);
     }
 
     // Returns true once a matching save was found and applied — the caller
     // skips its own fresh beginTurn() in that case, since restoring already
     // put activeIndex/history/pendingSnapshot exactly where they were.
     function restore() {
-        var raw;
-        try {
-            raw = localStorage.getItem(storageKey);
-        } catch (e) {
-            return false;
-        }
-        if (!raw) {
-            return false;
-        }
-        var saved;
-        try {
-            saved = JSON.parse(raw);
-        } catch (e) {
-            return false;
-        }
-        if (!saved.playersNow || saved.playersNow.length !== players.length) {
-            return false;
-        }
-        if (!saved.savedAt || Date.now() - saved.savedAt > MAX_SAVE_AGE_MS) {
-            try {
-                localStorage.removeItem(storageKey);
-            } catch (e) {
-                // Storage unavailable — nothing to clean up either way.
-            }
-            return false;
-        }
-        activeIndex = saved.activeIndex;
-        focusedIndex = saved.focusedIndex;
-        clicksThisTurn = saved.clicksThisTurn;
-        history = saved.history;
-        clickHistory = saved.clickHistory;
-        pendingSnapshot = saved.pendingSnapshot;
-        saved.playersNow.forEach(function (entry, index) {
-            players[index].turns = entry.turns;
-            applyState(players[index], entry.state);
-        });
-        return true;
+        return persistence.restore();
     }
 
+    // Starts a fresh turn: snapshots the active player and clears the click history.
     function beginTurn() {
-        var player = players[activeIndex];
+        const player = players[activeIndex];
         pendingSnapshot = {
             playerIndex: activeIndex,
             state: captureState(player),
@@ -191,6 +155,7 @@ function createTurnEngine(config) {
         clickHistory = [];
     }
 
+    // Repaints panels, undo buttons, and the game's own board, then persists.
     function renderAll() {
         players.forEach(function (player, index) {
             player.panel.classList.toggle('active', index === activeIndex && !gameOver);
@@ -202,11 +167,13 @@ function createTurnEngine(config) {
         persist();
     }
 
+    // Changes which panel is focused and re-renders.
     function setFocused(index) {
         focusedIndex = index;
         renderAll();
     }
 
+    // Shows/hides the game-over chrome (back link, done/undo buttons, overlay).
     function setGameOverUi(isOver) {
         gameOver = isOver;
         backLink.hidden = isOver;
@@ -216,6 +183,7 @@ function createTurnEngine(config) {
         gameOverOverlay.hidden = !isOver;
     }
 
+    // Ends the game on a winning click: closes out the turn, shows the winner, and fills the overlay.
     function declareWinner(player, populateOverlay) {
         history.push(pendingSnapshot);
         player.turns += 1;
@@ -226,10 +194,12 @@ function createTurnEngine(config) {
         renderAll();
     }
 
+    // Whether this player may click a box right now: their turn, game on, under the click cap.
     function canAct(playerIndex) {
         return !gameOver && playerIndex === activeIndex && clicksThisTurn < resolveMaxClicksPerTurn();
     }
 
+    // Snapshots state for undo and counts the click toward this turn's cap.
     function recordClick(player) {
         clickHistory.push({state: captureState(player)});
         clicksThisTurn += 1;
@@ -249,7 +219,7 @@ function createTurnEngine(config) {
         if (gameOver) {
             return;
         }
-        var snapshot = clickHistory.pop();
+        const snapshot = clickHistory.pop();
         if (!snapshot) {
             return;
         }
@@ -259,7 +229,7 @@ function createTurnEngine(config) {
     });
 
     undoBtn.addEventListener('click', function () {
-        var snapshot = history.pop();
+        const snapshot = history.pop();
         if (!snapshot) {
             return;
         }
@@ -267,7 +237,7 @@ function createTurnEngine(config) {
         // Discard whatever the current player has clicked this turn but not yet committed.
         applyState(players[activeIndex], pendingSnapshot.state);
 
-        var player = players[snapshot.playerIndex];
+        const player = players[snapshot.playerIndex];
         applyState(player, snapshot.state);
         player.turns = snapshot.turns;
 
@@ -282,6 +252,7 @@ function createTurnEngine(config) {
         setFocused(activeIndex);
     });
 
+    // Ends the active player's turn: commits state, advances to the next player, checks for game end.
     function commitTurn() {
         if (gameOver) {
             return;

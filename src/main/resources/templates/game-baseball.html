@@ -13,10 +13,7 @@
         <section class="player-panel baseball-panel" th:each="player, iter : ${players}"
                  th:classappend="${iter.index == 0} ? ' active' : ''"
                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
-            <div class="player-panel-header">
-                <span data-role="turns">Manche 1 / 9</span>
-                <span class="player-name" th:text="${player.username}">Name</span>
-            </div>
+            <div th:replace="~{generic/player-panel-header :: playerPanelHeader('Manche 1 / 9', false)}"></div>
 
             <div class="clock-hero">
                 <div class="clock-target" data-role="target">Viser le 1</div>
@@ -50,14 +47,7 @@
 
     <!----------------------------    WIN OVERLAY  ------------------------------------------>
 
-    <div class="game-over-overlay" data-role="game-over" th:attr="data-game-id=${game.id}" hidden>
-        <h2>&#127942; Partie terminée !</h2>
-        <p>Scores :</p>
-
-        <div class="baseball-ranking" data-role="final-ranking"></div>
-
-        <button type="button" class="btn-block" data-action="save-all-results">Enregistrer les résultats</button>
-    </div>
+    <div th:replace="~{generic/final-ranking-overlay :: finalRankingOverlay('Scores :')}"></div>
 
     <!----------------------------    WIN OVERLAY  ------------------------------------------>
 

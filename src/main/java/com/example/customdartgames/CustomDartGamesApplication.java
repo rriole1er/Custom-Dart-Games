@@ -20,6 +20,13 @@ public class CustomDartGamesApplication { // main entry
 		SpringApplication.run(CustomDartGamesApplication.class, args);
 	}
 
+	/**
+	 * Bean to populate games in DB
+	 * 
+	 * @param gameRepository
+	 *            gameRepository
+	 * @return args to persist
+	 */
 	@Bean
 	@Order(1)
 	CommandLineRunner seedGames(GameRepository gameRepository) {
@@ -160,6 +167,15 @@ public class CustomDartGamesApplication { // main entry
 		};
 	}
 
+	/**
+	 * Bean to populate players and best/worst scores in DB
+	 * 
+	 * @param userRepository
+	 *            userRepository
+	 * @param gameRepository
+	 *            gameRepository
+	 * @return args to persist
+	 */
 	@Bean
 	@Order(2)
 	CommandLineRunner seedPlater(UserRepository userRepository, GameRepository gameRepository,

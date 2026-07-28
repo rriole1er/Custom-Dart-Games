@@ -1,23 +1,24 @@
 // Countdown (501/301/101) game screen: dual keypad (raw total vs. per-dart
 // segment entry), checkout suggestions, and a per-turn undo stack.
 document.addEventListener('DOMContentLoaded', function () {
-    var panels = Array.prototype.slice.call(document.querySelectorAll('.player-panel'));
+    const panels = Array.prototype.slice.call(document.querySelectorAll('.player-panel'));
     if (!panels.length) {
         return;
     }
 
-    var keypadPanel = document.getElementById('keypad-panel');
-    var backLink = document.querySelector('[data-role="back-link"]');
-    var gameOverOverlay = document.querySelector('[data-role="game-over"]');
-    var inputDisplay = document.querySelector('[data-role="input-display"]');
-    var breakdownDisplay = document.querySelector('[data-role="segment-breakdown"]');
-    var keypadTotal = document.querySelector('[data-role="keypad-total"]');
-    var keypadZeroRow = document.querySelector('[data-role="keypad-zero-row"]');
-    var keypadSegments = document.querySelector('[data-role="keypad-segments"]');
-    var keypadSegmentErase = document.querySelector('[data-role="keypad-segment-erase"]');
+    const keypadPanel = document.getElementById('keypad-panel');
+    const backLink = document.querySelector('[data-role="back-link"]');
+    const gameOverOverlay = document.querySelector('[data-role="game-over"]');
+    const inputDisplay = document.querySelector('[data-role="input-display"]');
+    const breakdownDisplay = document.querySelector('[data-role="segment-breakdown"]');
+    const keypadTotal = document.querySelector('[data-role="keypad-total"]');
+    const keypadZeroRow = document.querySelector('[data-role="keypad-zero-row"]');
+    const keypadSegments = document.querySelector('[data-role="keypad-segments"]');
+    const keypadSegmentErase = document.querySelector('[data-role="keypad-segment-erase"]');
 
-    var players = panels.map(function (panel) {
-        var startingScore = parseInt(panel.querySelector('[data-role="score"]').textContent, 10);
+    // Players display
+    const players = panels.map(function (panel) {
+        const startingScore = parseInt(panel.querySelector('[data-role="score"]').textContent, 10);
         return {
             panel: panel,
             id: panel.dataset.playerId,
@@ -30,11 +31,11 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     });
 
-    var activeIndex = 0;
-    var buffer = '';
-    var mode = 'total';
-    var segmentTaps = [];
-    var gameOver = false;
+    let activeIndex = 0;
+    let buffer = '';
+    let mode = 'total';
+    let segmentTaps = [];
+    let gameOver = false;
 
     // Undo model (mirrors game-cricket-common.js): `history` is a stack of one
     // snapshot per committed turn, so Annuler can walk back arbitrarily far
@@ -42,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // buffer (`buffer`/`segmentTaps`) until "Terminer" applies it, so undo
     // never needs to snapshot mid-turn state — resetInput() simply discards
     // whatever hasn't been committed yet.
-    var history = [];
+    let history = [];
 
     // Refresh survival (see game-turn-engine.js for the same idea applied to
     // every other game): every committed turn is saved to localStorage,
@@ -51,29 +52,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // unrelated one. Mid-turn buffer/segmentTaps aren't saved, matching
     // this file's own choice above not to undo-track them either — only
     // committed state is worth surviving a refresh for.
-    var storageKey = 'dartGameState:' + document.title + ':' + players.map(function (p) {
+    const storageKey = dartGameStorageKey(players.map(function (p) {
         return p.id;
-    }).join(',');
+    }));
 
-    // A save older than this is more likely an abandoned game (tab closed
-    // without confirming exit, browser killed in the background) than one
-    // worth resuming — past this age, restore() ignores and clears it
-    // rather than risk resurrecting last week's match onto today's replay
-    // of the same lineup.
-    var MAX_SAVE_AGE_MS = 24 * 60 * 60 * 1000;
-
-    function persist() {
-        if (gameOver) {
-            try {
-                localStorage.removeItem(storageKey);
-            } catch (e) {
-                // Storage unavailable — nothing to clean up either way.
-            }
-            return;
-        }
-        try {
-            localStorage.setItem(storageKey, JSON.stringify({
-                savedAt: Date.now(),
+    // A save older than this is more likely an abandoned game (24h)
+    const persistence = createPersistence(storageKey, 24 * 60 * 60 * 1000,
+        function () {
+            return {
                 activeIndex: activeIndex,
                 history: history,
                 playersNow: players.map(function (p) {
@@ -84,58 +70,41 @@ document.addEventListener('DOMContentLoaded', function () {
                         checkoutVariant: p.checkoutVariant
                     };
                 })
-            }));
-        } catch (e) {
-            // Storage full or unavailable — the game keeps working, it just won't survive a refresh.
-        }
+            };
+        },
+        function (saved) {
+            if (!saved.playersNow || saved.playersNow.length !== players.length) {
+                return false;
+            }
+            activeIndex = saved.activeIndex;
+            history = saved.history;
+            saved.playersNow.forEach(function (entry, index) {
+                players[index].remaining = entry.remaining;
+                players[index].turns = entry.turns;
+                players[index].totalScored = entry.totalScored;
+                players[index].checkoutVariant = entry.checkoutVariant;
+            });
+            return true;
+        });
+
+    // Cache saving method
+    function persist() {
+        persistence.persist(gameOver);
     }
 
+    // Restores a previously saved in-progress game, if any
     function restore() {
-        var raw;
-        try {
-            raw = localStorage.getItem(storageKey);
-        } catch (e) {
-            return false;
-        }
-        if (!raw) {
-            return false;
-        }
-        var saved;
-        try {
-            saved = JSON.parse(raw);
-        } catch (e) {
-            return false;
-        }
-        if (!saved.playersNow || saved.playersNow.length !== players.length) {
-            return false;
-        }
-        if (!saved.savedAt || Date.now() - saved.savedAt > MAX_SAVE_AGE_MS) {
-            try {
-                localStorage.removeItem(storageKey);
-            } catch (e) {
-                // Storage unavailable — nothing to clean up either way.
-            }
-            return false;
-        }
-        activeIndex = saved.activeIndex;
-        history = saved.history;
-        saved.playersNow.forEach(function (entry, index) {
-            players[index].remaining = entry.remaining;
-            players[index].turns = entry.turns;
-            players[index].totalScored = entry.totalScored;
-            players[index].checkoutVariant = entry.checkoutVariant;
-        });
-        return true;
+        return persistence.restore();
     }
 
     // Segments usable before the final dart of a checkout: triples then singles,
     // sorted highest-value first so findFinish() tries the biggest scores first
     // (a greedy search, not an exhaustive one — see its comment below).
-    var LEAD_SEGMENTS = [];
-    for (var triple = 20; triple >= 1; triple--) {
+    const LEAD_SEGMENTS = [];
+    for (let triple = 20; triple >= 1; triple--) {
         LEAD_SEGMENTS.push({label: 'T' + triple, value: triple * 3});
     }
-    for (var single = 20; single >= 1; single--) {
+    for (let single = 20; single >= 1; single--) {
         LEAD_SEGMENTS.push({label: single.toString(), value: single});
     }
     LEAD_SEGMENTS.push({label: '25', value: 25});
@@ -162,15 +131,15 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
         }
 
-        for (var i = 0; i < LEAD_SEGMENTS.length; i++) {
-            var opt = LEAD_SEGMENTS[i];
+        for (let i = 0; i < LEAD_SEGMENTS.length; i++) {
+            const opt = LEAD_SEGMENTS[i];
             if (skipFirstLabel && opt.label === skipFirstLabel) {
                 continue;
             }
             if (opt.value >= remaining) {
                 continue;
             }
-            var rest = findFinish(remaining - opt.value, dartsLeft - 1, null);
+            const rest = findFinish(remaining - opt.value, dartsLeft - 1, null);
             if (rest) {
                 return [opt.label].concat(rest);
             }
@@ -186,11 +155,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (remaining < 2 || remaining > 170) {
             return null;
         }
-        for (var darts = 1; darts <= 3; darts++) {
-            var primary = findFinish(remaining, darts, null);
+        for (let darts = 1; darts <= 3; darts++) {
+            const primary = findFinish(remaining, darts, null);
             if (primary) {
                 if (variant % 2 === 1 && darts > 1) {
-                    var alt = findFinish(remaining, darts, primary[0]);
+                    const alt = findFinish(remaining, darts, primary[0]);
                     if (alt) {
                         return alt;
                     }
@@ -201,21 +170,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
+    // Display and update player state
     function render(player) {
-        var panel = player.panel;
+        const panel = player.panel;
         panel.querySelector('[data-role="score"]').textContent = player.remaining;
         panel.querySelector('[data-role="turns"]').textContent = 'Tours : ' + player.turns;
-        var avg = player.turns > 0 ? (player.totalScored / player.turns) : 0;
+        const avg = player.turns > 0 ? (player.totalScored / player.turns) : 0;
         panel.querySelector('[data-role="avg"]').textContent = 'Moy : ' + avg.toFixed(1);
 
-        var progress = player.startingScore > 0
+        const progress = player.startingScore > 0
             ? Math.min(100, Math.max(0, ((player.startingScore - player.remaining) / player.startingScore) * 100))
             : 0;
         panel.querySelector('[data-role="progress"]').style.width = progress + '%';
 
-        var checkoutEl = panel.querySelector('[data-role="checkout"]');
-        var isActive = players.indexOf(player) === activeIndex;
-        var combo = isActive && !gameOver ? computeCheckout(player.remaining, player.checkoutVariant) : null;
+        const checkoutEl = panel.querySelector('[data-role="checkout"]');
+        const isActive = players.indexOf(player) === activeIndex;
+        const combo = isActive && !gameOver ? computeCheckout(player.remaining, player.checkoutVariant) : null;
         if (combo) {
             checkoutEl.hidden = false;
             checkoutEl.querySelector('[data-role="checkout-combo"]').textContent = combo.join('  ');
@@ -224,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Renders every player panel and persists the current state
     function renderAll() {
         players.forEach(function (player, index) {
             player.panel.classList.toggle('active', index === activeIndex && !gameOver);
@@ -232,9 +203,10 @@ document.addEventListener('DOMContentLoaded', function () {
         persist();
     }
 
+    // Segment mode / pad mode switch
     function updateDisplay() {
         if (mode === 'segment') {
-            var sum = segmentTaps.reduce(function (a, b) {
+            const sum = segmentTaps.reduce(function (a, b) {
                 return a + b;
             }, 0);
             inputDisplay.textContent = String(sum);
@@ -245,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Reset input
     function resetInput() {
         buffer = '';
         segmentTaps = [];
@@ -261,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
         keypadSegmentErase.hidden = mode !== 'segment';
     }
 
+    // Briefly highlights a panel to signal a busted turn
     function flashBust(player) {
         player.panel.classList.add('bust-flash');
         setTimeout(function () {
@@ -268,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 600);
     }
 
+    // Ends the game and displays the winner overlay
     function showGameOver(player) {
         gameOver = true;
         // commitTurn() already called renderAll() for this turn just before
@@ -280,18 +255,16 @@ document.addEventListener('DOMContentLoaded', function () {
         player.panel.classList.add('winner');
         gameOverOverlay.hidden = false;
         gameOverOverlay.querySelector('[data-role="winner-name"]').textContent = player.name;
-        gameOverOverlay.querySelector('[data-role="winner-detail"]').textContent =
-            player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
-        gameOverOverlay.querySelector('[data-role="winner-input"]').value = player.id;
-        gameOverOverlay.querySelector('[data-role="result-input"]').value = player.turns;
+        populateWinnerFields(gameOverOverlay, player, player.turns + ' ' + toursWord(player.turns) + ' pour gagner');
     }
 
+    // Applies a scored turn to the active player and advances to the next
     function commitTurn(scored) {
         if (gameOver) {
             return;
         }
-        var player = players[activeIndex];
-        var previous = {
+        const player = players[activeIndex];
+        const previous = {
             index: activeIndex,
             remaining: player.remaining,
             turns: player.turns,
@@ -300,8 +273,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Busts if the turn would go negative, or land on 1 (no double left to
         // finish on) — either way the turn counts but the score doesn't.
-        var newRemaining = player.remaining - scored;
-        var busted = scored > 0 && (newRemaining < 0 || newRemaining === 1);
+        const newRemaining = player.remaining - scored;
+        const busted = scored > 0 && (newRemaining < 0 || newRemaining === 1);
 
         player.turns += 1;
         if (!busted) {
@@ -364,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelector('[data-action="done"]').addEventListener('click', function () {
-        var scored;
+        let scored;
         if (mode === 'segment') {
             scored = segmentTaps.reduce(function (a, b) {
                 return a + b;
@@ -380,11 +353,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelector('[data-action="undo"]').addEventListener('click', function () {
-        var previous = history.pop();
+        const previous = history.pop();
         if (!previous) {
             return;
         }
-        var player = players[previous.index];
+        const player = players[previous.index];
         player.remaining = previous.remaining;
         player.turns = previous.turns;
         player.totalScored = previous.totalScored;
@@ -403,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     panels.forEach(function (panel, index) {
-        var refreshBtn = panel.querySelector('[data-role="checkout-refresh"]');
+        const refreshBtn = panel.querySelector('[data-role="checkout-refresh"]');
         refreshBtn.addEventListener('click', function () {
             players[index].checkoutVariant += 1;
             render(players[index]);

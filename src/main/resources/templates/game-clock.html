@@ -13,10 +13,7 @@
         <section class="player-panel clock-panel" th:each="player, iter : ${players}"
                  th:classappend="${iter.index == 0} ? ' active focused' : ''"
                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
-            <div class="player-panel-header">
-                <span data-role="turns">Tours : 0</span>
-                <span class="player-name" th:text="${player.username}">Name</span>
-            </div>
+            <div th:replace="~{generic/player-panel-header :: playerPanelHeader('Tours : 0', false)}"></div>
 
             <div class="clock-hero">
                 <div class="clock-target" data-role="target">1</div>

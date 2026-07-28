@@ -13,24 +13,24 @@
 // once at the bottom of this file — same convention as game-cricket-common.js.
 function startBaseballBoard(config) {
     document.addEventListener('DOMContentLoaded', function () {
-        var panels = Array.prototype.slice.call(document.querySelectorAll('.baseball-panel'));
+        const panels = Array.prototype.slice.call(document.querySelectorAll('.baseball-panel'));
         if (!panels.length) {
             return;
         }
 
-        var TOTAL_TURNS = 9;
+        const TOTAL_TURNS = 9;
 
         // One bat icon per point banked this inning — matches the dot/mark-icon
         // convention used elsewhere (Cricket marks, Clock points) for showing a
         // count visually instead of as a raw number.
-        var BAT_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">'
+        const BAT_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">'
             + '<rect x="10" y="2" width="4" height="9" rx="2" fill="var(--wood)" transform="rotate(-40 12 12)"/>'
             + '<rect x="9" y="10" width="6" height="12" rx="3" fill="var(--wood-dark)" transform="rotate(-40 12 12)"/>'
             + '</svg>';
 
-        var gameOverOverlay = document.querySelector('[data-role="game-over"]');
+        const gameOverOverlay = document.querySelector('[data-role="game-over"]');
 
-        var players = panels.map(function (panel) {
+        const players = panels.map(function (panel) {
             return {
                 id: panel.dataset.playerId,
                 name: panel.dataset.playerName,
@@ -46,9 +46,10 @@ function startBaseballBoard(config) {
             };
         });
 
+        // Redraws each player panel to match the current game state.
         function render(ctx) {
             players.forEach(function (player, index) {
-                var turnNumber = Math.min(player.turns + 1, TOTAL_TURNS);
+                const turnNumber = Math.min(player.turns + 1, TOTAL_TURNS);
                 player.turnsEl.textContent = 'Manche ' + turnNumber + ' / ' + TOTAL_TURNS;
                 player.targetEl.textContent = 'Viser le ' + config.getTarget(player.turns);
                 player.targetBox.disabled = !(index === ctx.activeIndex && !ctx.gameOver);
@@ -57,43 +58,27 @@ function startBaseballBoard(config) {
                 // alternate sides as points come in so both stay roughly even.
                 player.pointsLeftEl.innerHTML = '';
                 player.pointsRightEl.innerHTML = '';
-                for (var i = 0; i < player.points; i++) {
-                    var side = i % 2 === 0 ? player.pointsRightEl : player.pointsLeftEl;
+                for (let i = 0; i < player.points; i++) {
+                    const side = i % 2 === 0 ? player.pointsRightEl : player.pointsLeftEl;
                     side.insertAdjacentHTML('afterbegin', BAT_ICON);
                 }
             });
         }
 
+        // Builds the sorted ranking rows in the game-over overlay, marking winner(s).
         function populateGameEnd(overlay, allPlayers) {
-            var maxScore = allPlayers.reduce(function (max, p) {
+            const maxScore = allPlayers.reduce(function (max, p) {
                 return Math.max(max, p.score);
             }, -Infinity);
-            var ranked = allPlayers.slice().sort(function (a, b) {
+            const ranked = allPlayers.slice().sort(function (a, b) {
                 return b.score - a.score;
             });
-
-            var list = overlay.querySelector('[data-role="final-ranking"]');
-            list.innerHTML = '';
-            ranked.forEach(function (player) {
-                var isWinner = player.score === maxScore;
-                var row = document.createElement('div');
-                row.className = 'baseball-rank-row' + (isWinner ? ' winner' : '');
-
-                var name = document.createElement('span');
-                name.className = 'baseball-rank-name';
-                name.textContent = player.name + (isWinner ? ' 🏆' : '');
-
-                var score = document.createElement('span');
-                score.className = 'baseball-rank-score';
-                score.textContent = player.score;
-
-                row.appendChild(name);
-                row.appendChild(score);
-                list.appendChild(row);
-            });
+            populateRankedList(overlay, ranked.map(function (player) {
+                return {name: player.name, value: player.score, isWinner: player.score === maxScore};
+            }));
         }
 
-        var engine = createTurnEngine({
+        const engine = createTurnEngine({
             players: players,
             captureState: function (player) {
                 return {score: player.score, points: player.points};
@@ -132,25 +117,13 @@ function startBaseballBoard(config) {
         // and worst per user are tracked independently on the leaderboard, so a
         // losing score still matters. finishGame() only accepts one (gameId,
         // userId, result) triple per call, so this fires one request per player.
-        document.querySelector('[data-action="save-all-results"]').addEventListener('click', function (e) {
-            var btn = e.currentTarget;
-            btn.disabled = true;
-            var gameId = gameOverOverlay.dataset.gameId;
-            Promise.all(players.map(function (player) {
-                return fetch('/dart/play/finish', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'gameId=' + encodeURIComponent(gameId) + '&userId=' + encodeURIComponent(player.id)
-                        + '&result=' + encodeURIComponent(player.score)
-                });
-            })).then(function () {
-                window.location.href = '/dart/play';
-            });
+        wireSaveAllResults(players, gameOverOverlay, function (player) {
+            return player.score;
         });
     });
 }
 
-var BASEBALL_VARIANTS = {
+const BASEBALL_VARIANTS = {
     // Baseball: targets rise 1 -> 9, same order every player plays.
     baseball: {
         getTarget: function (turns) {
@@ -165,7 +138,7 @@ var BASEBALL_VARIANTS = {
     }
 };
 
-var variantEl = document.querySelector('[data-variant]');
+const variantEl = document.querySelector('[data-variant]');
 if (variantEl) {
     startBaseballBoard(BASEBALL_VARIANTS[variantEl.dataset.variant]);
 }

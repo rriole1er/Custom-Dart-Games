@@ -1,0 +1,9 @@
+<div th:fragment="finalRankingOverlay(resultLabel)" class="game-over-overlay" data-role="game-over"
+     th:attr="data-game-id=${game.id}" hidden>
+    <h2>&#127942; Partie terminée !</h2>
+    <p th:text="${resultLabel}">Scores :</p>
+
+    <div class="baseball-ranking" data-role="final-ranking"></div>
+
+    <button type="button" class="btn-block" data-action="save-all-results">Enregistrer les résultats</button>
+</div>

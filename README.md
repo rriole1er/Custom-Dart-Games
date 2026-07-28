@@ -46,8 +46,10 @@ For a rough sense of how much of the codebase is AI-assisted, by line count:
 
 | | Lines | Written by |
 |---|---:|---|
-| Java (`src/main/java`) | ~1,100 | me, by hand |
-| Templates + CSS + JS (`src/main/resources`) | ~6,250 | Claude Code, under review |
+| Java (`src/main/java`) | ~1,270 | me, by hand |
+| Templates (`resources/templates`) | ~1,515 | Claude Code, under review |
+| CSS (`resources/static/css`) | ~1,740 | Claude Code, under review |
+| JS (`resources/static/js`) | ~2,880 | Claude Code, under review |
 
 So frontend code is the majority of the codebase by volume, but every game's actual
 *rules and behavior* came from me, Claude fills in the implementation in CSS, Thymeleaf and JavaScript vanilla, not the

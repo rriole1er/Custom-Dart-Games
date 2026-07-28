@@ -1,0 +1,5 @@
+<div th:fragment="playerPanelHeader(turnsLabel, showAvg)" class="player-panel-header">
+    <span data-role="turns" th:text="${turnsLabel}">Tours : 0</span>
+    <span class="player-name" th:text="${player.username}">Name</span>
+    <span data-role="avg" th:if="${showAvg}">Moy : 0.0</span>
+</div>

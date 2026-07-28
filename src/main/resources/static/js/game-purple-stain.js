@@ -28,60 +28,50 @@
 // are the shared game-turn-engine.js — this file owns the target-defining
 // board, the per-round elimination bookkeeping, and the zone label text.
 document.addEventListener('DOMContentLoaded', function () {
-    var panels = Array.prototype.slice.call(document.querySelectorAll('.purple-panel'));
+    const panels = Array.prototype.slice.call(document.querySelectorAll('.purple-panel'));
     if (!panels.length) {
         return;
     }
 
-    // The engine always starts on players[0] — i.e. whoever's first in
-    // players-setup order is the definer. Reordering the on-screen stack so
-    // the definer's panel shows LAST is purely visual: it doesn't touch the
-    // `players` array below, so turn order (definer goes last in the
-    // rotation too, naturally, once everyone else has had a turn) is
-    // unaffected — only where its panel sits in the stack changes.
+    // The engine always starts on players[0]
     panels[0].parentElement.appendChild(panels[0]);
 
-    var boardWrap = document.querySelector('[data-role="board-wrap"]');
-    var targetBanner = document.querySelector('[data-role="target-banner"]');
-    var targetLabelEl = document.querySelector('[data-role="target-label"]');
-    var roundWarningEl = document.querySelector('[data-role="round-warning"]');
-    var zoneEls = Array.prototype.slice.call(document.querySelectorAll('[data-zone]'));
-    var turnActions = document.querySelector('.keypad-actions');
+    const boardWrap = document.querySelector('[data-role="board-wrap"]');
+    const targetBanner = document.querySelector('[data-role="target-banner"]');
+    const targetLabelEl = document.querySelector('[data-role="target-label"]');
+    const roundWarningEl = document.querySelector('[data-role="round-warning"]');
+    const zoneEls = Array.prototype.slice.call(document.querySelectorAll('[data-zone]'));
+    const turnActions = document.querySelector('.keypad-actions');
 
     // Shared across every player — set once by whoever plays the defining
-    // turn, read by everyone afterwards. Folded into captureState/applyState
-    // below so "Annuler le tour" correctly reverts it too.
-    var targetZone = null;
+    // turn, read by everyone afterward.
+    let targetZone = null;
 
-    // Round bookkeeping — also shared, also folded into every snapshot.
-    // pendingMisses: players who missed BEFORE anyone has hit yet this round
-    // — cleared (nobody eliminated) if the round ends with no hit at all,
+    // pendingMisses: players who missed BEFORE anyone has hit yet this round.
+    // Cleared (nobody eliminated) if the round ends with no hit at all,
     // cleared (everyone in it eliminated) the moment somebody finally does
-    // hit. hitOccurredThisRound: has anyone hit yet this round — once true,
-    // any further miss is eliminated on the spot, no pending, no waiting for
-    // a second hit. turnsThisRoundCount / roundTargetTurns: how many of the
-    // currently-alive players have gone this round vs how many need to
-    // before the round ends and a fresh one starts. Only meaningful once
-    // targetZone is set.
-    var pendingMisses = [];
-    var hitOccurredThisRound = false;
-    var turnsThisRoundCount = 0;
-    var roundTargetTurns = 0;
+    // hit.
+    let pendingMisses = [];
 
-    // Set on an achieve-button click, consumed by beforeCommit on the very
-    // next (synchronous) commit — never observed anywhere else, so it isn't
-    // part of the undo snapshot.
-    var didHitThisTurn = false;
+    // hitOccurredThisRound: has anyone hit yet this round. Once true,
+    // any further miss is eliminated on the spot
+    let hitOccurredThisRound = false;
+
+    // turnsThisRoundCount / roundTargetTurns: how many of the
+    // currently-alive players have gone this round vs how many need to
+    // before the round ends and a fresh one starts.
+    let turnsThisRoundCount = 0;
+    let roundTargetTurns = 0;
+
+    let didHitThisTurn = false;
 
     // Set synchronously the instant a zone is tapped, consumed by
-    // beforeCommit on the delayed commitTurn() below — targetZone itself is
-    // already non-null by then (set at the same synchronous moment), so it
-    // can't be used to tell "this is the defining commit" apart from a real
-    // attempt; this flag can.
-    var isDefiningCommit = false;
+    // beforeCommit on the delayed commitTurn() below
+    let isDefiningCommit = false;
 
-    var ZONE_TYPE_LABELS = {petit: 'Petit', grand: 'Grand', double: 'Double', triple: 'Triple'};
+    const ZONE_TYPE_LABELS = {petit: 'Petit', grand: 'Grand', double: 'Double', triple: 'Triple'};
 
+    // Builds the human-readable label for a zone key.
     function zoneLabel(zone) {
         if (zone === 'bulle') {
             return 'Bulle';
@@ -89,13 +79,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (zone === 'demi-bulle') {
             return 'Demi-bulle';
         }
-        var dash = zone.indexOf('-');
-        var type = zone.slice(0, dash);
-        var number = zone.slice(dash + 1);
+        const dash = zone.indexOf('-');
+        const type = zone.slice(0, dash);
+        const number = zone.slice(dash + 1);
         return ZONE_TYPE_LABELS[type] + ' ' + number;
     }
 
-    var players = panels.map(function (panel) {
+    const players = panels.map(function (panel) {
         return {
             id: panel.dataset.playerId,
             name: panel.dataset.playerName,
@@ -109,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     });
 
+    // Renders the current game state: board/banner visibility and per-player panels.
     function render(ctx) {
         boardWrap.hidden = targetZone !== null;
         targetBanner.hidden = targetZone === null;
@@ -122,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
             || (!hitOccurredThisRound && pendingMisses.length === 0);
 
         players.forEach(function (player, index) {
-            var isMyTurn = index === ctx.activeIndex && !ctx.gameOver;
+            const isMyTurn = index === ctx.activeIndex && !ctx.gameOver;
             // Before the target is set, only the definer's panel is worth
             // showing — nobody else has anything to do yet. Once it's set,
             // every player is back, same as Cricket/Clock.
@@ -136,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    var engine = createTurnEngine({
+    const engine = createTurnEngine({
         players: players,
         focusable: false,
         captureState: function () {
@@ -166,14 +157,8 @@ document.addEventListener('DOMContentLoaded', function () {
             roundTargetTurns = state.roundTargetTurns;
         },
         render: render,
-        // Skip eliminated players — they're still in the fixed `players`
-        // array (undo needs them there), just never handed another turn.
         nextActiveIndex: function (activeIndex) {
-            var next = activeIndex;
-            do {
-                next = (next + 1) % players.length;
-            } while (!players[next].alive);
-            return next;
+            return nextAliveIndex(activeIndex, players);
         },
         beforeCommit: function (player) {
             if (isDefiningCommit) {
@@ -219,15 +204,14 @@ document.addEventListener('DOMContentLoaded', function () {
         populateGameEnd: populateGameEnd
     });
 
+    // Fills the game-over overlay with the winning player's name and stats.
     function populateGameEnd(overlay, allPlayers) {
-        var winner = allPlayers.filter(function (p) {
+        const winner = allPlayers.filter(function (p) {
             return p.alive;
         })[0];
         overlay.querySelector('[data-role="winner-name"]').textContent = winner.name;
-        overlay.querySelector('[data-role="winner-detail"]').textContent =
-            zoneLabel(targetZone) + ' touchée en ' + winner.turns + (winner.turns > 1 ? ' tours' : ' tour');
-        overlay.querySelector('[data-role="winner-input"]').value = winner.id;
-        overlay.querySelector('[data-role="result-input"]').value = winner.turns;
+        populateWinnerFields(overlay, winner,
+            zoneLabel(targetZone) + ' touchée en ' + winner.turns + ' ' + toursWord(winner.turns));
     }
 
     zoneEls.forEach(function (el) {
@@ -242,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Defining the target isn't a real attempt at hitting it — every
             // player, including whoever just set it, starts their own count
             // of real turns at 0.
-            var definer = players[engine.getActiveIndex()];
+            const definer = players[engine.getActiveIndex()];
             setTimeout(function () {
                 engine.commitTurn();
                 definer.turns -= 1;

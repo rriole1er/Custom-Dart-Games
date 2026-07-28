@@ -1,34 +1,26 @@
 // Ozone: the target is split into named zones (four number ranges plus
-// bull/demi-bulle). The app doesn't simulate darts or verify how many it
-// took — players know the rules and manage that themselves at the board.
+// bull/demi-bulle).
 // One tap on a zone just takes it outright, whether it was neutral or
-// somebody else's. A turn allows at most 3 taps (one per dart, so at most 3
-// zones a turn, however lucky the throw). First player to own every zone
-// wins outright.
+// somebody else's. A turn allows at most 3 taps.
+// First player to own every zonewins outright.
 //
-// The classic 1v1 variant is just that. The 3+ players variant
-// (config.threeMonts / config.killianSauveur) adds two rules on top:
-//   - A 6th zone, "3 Monts" — same as any other zone here, just part of the
+// The classic 1v1 variant is just that. The 3+ players variant adds two rules on top:
+//   - A 6th zone, "3 Monts" : same as any other zone here, just part of the
 //     set a player needs to own everything of. The rule that a triple must
-//     go there first is on the players to self-enforce, same as the
-//     neutral/adversary dart counts are.
+//     go there first is on.
 //   - Once every zone has an owner (no neutral left), a player reduced to 0
 //     zones is normally eliminated — except the whole match allows exactly
-//     ONE save, ever ("Killian sauveur"), and only while 3+ players are
-//     still in the game (never in the final 2). Whoever first qualifies
-//     gets one inserted bonus turn to reclaim at least one zone; succeed or
-//     fail, that's the match's one save, spent either way.
-// Turn order (including the elimination skip and the inserted bonus turn)
-// and both undo levels are the shared game-turn-engine.js — this file owns
-// the zone list, ownership, and the elimination/sauveur state machine.
+//     ONE save  and only while 3+ players are still in the game.
+
+
 function startOzoneBoard(config) {
     document.addEventListener('DOMContentLoaded', function () {
-        var panels = Array.prototype.slice.call(document.querySelectorAll('.ozone-panel'));
+        const panels = Array.prototype.slice.call(document.querySelectorAll('.ozone-panel'));
         if (!panels.length) {
             return;
         }
 
-        var ZONES = [
+        const ZONES = [
             {name: 'La Fontaine Saint-Martin', range: '1 - 5'},
             {name: 'Mansigné', range: '6 - 10'},
             {name: 'Cérans-Foulletourte', range: '11 - 15'},
@@ -39,23 +31,23 @@ function startOzoneBoard(config) {
             ZONES.push({name: '3 Monts', range: 'Toutes les cases triples'});
         }
 
-        var zoneBoxes = ZONES.map(function (zone, i) {
-            var box = document.querySelector('.ozone-zone[data-index="' + i + '"]');
+        const zoneBoxes = ZONES.map(function (zone, i) {
+            const box = document.querySelector('.ozone-zone[data-index="' + i + '"]');
             box.querySelector('[data-role="range"]').textContent = zone.range;
             return box;
         });
         // The template always has a 6th "3 Monts" button so both variants
         // share one file — hide it outright for the classic 1v1 game.
         if (!config.threeMonts) {
-            var extraBox = document.querySelector('.ozone-zone[data-index="5"]');
+            const extraBox = document.querySelector('.ozone-zone[data-index="5"]');
             if (extraBox) {
                 extraBox.hidden = true;
             }
         }
 
-        var sauveurBanner = document.querySelector('[data-role="sauveur-banner"]');
+        const sauveurBanner = document.querySelector('[data-role="sauveur-banner"]');
 
-        var players = panels.map(function (panel) {
+        const players = panels.map(function (panel) {
             return {
                 id: panel.dataset.playerId,
                 name: panel.dataset.playerName,
@@ -69,40 +61,44 @@ function startOzoneBoard(config) {
         // Shared, not per-player, and permanent (persists turn to turn).
         // Folded into captureState/applyState below so both undo levels
         // revert it correctly.
-        var owners = ZONES.map(function () {
+        let owners = ZONES.map(function () {
             return null;
         });
-        var eliminated = players.map(function () {
+        let eliminated = players.map(function () {
             return false;
         });
-        var killianSauveurUsed = false;
+        let killianSauveurUsed = false;
         // Set the instant a player hits 0 zones and qualifies for the save —
         // consumed by nextActiveIndex, which redirects the very next turn to
         // them and moves the marker into sauveurResolving.
-        var pendingSauveur = null;
+        let pendingSauveur = null;
         // Set while that inserted bonus turn is in progress; checked (and
         // cleared) by beforeCommit the moment it ends, to decide saved vs
         // eliminated.
-        var sauveurResolving = null;
+        let sauveurResolving = null;
 
+        // Counts how many zones a given player currently owns.
         function ownedZoneCount(playerIndex) {
             return owners.filter(function (owner) {
                 return owner === playerIndex;
             }).length;
         }
 
+        // Whether every zone has a non-null owner.
         function allZonesClaimed() {
             return owners.every(function (owner) {
                 return owner !== null;
             });
         }
 
+        // Whether the given player owns every zone (win condition).
         function ownsEverything(playerIndex) {
             return owners.every(function (owner) {
                 return owner === playerIndex;
             });
         }
 
+        // Redraws player panels, sauveur banner, and zone box states.
         function render(ctx) {
             players.forEach(function (player, index) {
                 player.turnsEl.textContent = 'Tours : ' + player.turns;
@@ -111,7 +107,7 @@ function startOzoneBoard(config) {
             });
 
             if (sauveurBanner) {
-                var resolvingPlayer = sauveurResolving !== null ? players[sauveurResolving] : null;
+                const resolvingPlayer = sauveurResolving !== null ? players[sauveurResolving] : null;
                 sauveurBanner.hidden = !resolvingPlayer || ctx.gameOver;
                 if (resolvingPlayer) {
                     sauveurBanner.textContent = resolvingPlayer.name + ' tente le Killian Sauveur !';
@@ -119,10 +115,10 @@ function startOzoneBoard(config) {
             }
 
             ZONES.forEach(function (zone, zoneIndex) {
-                var box = zoneBoxes[zoneIndex];
-                var owner = owners[zoneIndex];
-                var isMine = owner === ctx.activeIndex;
-                var isTheirs = owner !== null && !isMine;
+                const box = zoneBoxes[zoneIndex];
+                const owner = owners[zoneIndex];
+                const isMine = owner === ctx.activeIndex;
+                const isTheirs = owner !== null && !isMine;
 
                 box.classList.toggle('ozone-mine', isMine);
                 box.classList.toggle('ozone-theirs', isTheirs);
@@ -131,7 +127,8 @@ function startOzoneBoard(config) {
             });
         }
 
-        var engine = createTurnEngine({
+        // Turn engine
+        const engine = createTurnEngine({
             players: players,
             focusable: false,
             maxClicksPerTurn: 3,
@@ -144,6 +141,7 @@ function startOzoneBoard(config) {
                     sauveurResolving: sauveurResolving
                 };
             },
+            // Cache state
             applyState: function (player, state) {
                 owners = state.owners;
                 eliminated = state.eliminated;
@@ -154,12 +152,12 @@ function startOzoneBoard(config) {
             render: render,
             nextActiveIndex: function (activeIndex) {
                 if (pendingSauveur !== null) {
-                    var chosen = pendingSauveur;
+                    const chosen = pendingSauveur;
                     pendingSauveur = null;
                     sauveurResolving = chosen;
                     return chosen;
                 }
-                var next = activeIndex;
+                let next = activeIndex;
                 do {
                     next = (next + 1) % players.length;
                 } while (eliminated[next]);
@@ -170,7 +168,7 @@ function startOzoneBoard(config) {
                     return;
                 }
 
-                var activeIdx = players.indexOf(player);
+                const activeIdx = players.indexOf(player);
 
                 if (sauveurResolving === activeIdx) {
                     killianSauveurUsed = true;
@@ -188,7 +186,7 @@ function startOzoneBoard(config) {
                     if (eliminated[idx] || idx === sauveurResolving || ownedZoneCount(idx) > 0) {
                         return;
                     }
-                    var stillInGame = players.filter(function (_, i) {
+                    const stillInGame = players.filter(function (_, i) {
                         return !eliminated[i];
                     }).length;
                     if (stillInGame >= 3 && !killianSauveurUsed && pendingSauveur === null) {
@@ -200,22 +198,20 @@ function startOzoneBoard(config) {
             }
         });
 
+        // Fills the win overlay with this player's turn count.
         function populateWinOverlay(overlay, player) {
-            overlay.querySelector('[data-role="winner-detail"]').textContent =
-                player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
-            overlay.querySelector('[data-role="winner-input"]').value = player.id;
-            overlay.querySelector('[data-role="result-input"]').value = player.turns;
+            populateWinnerFields(overlay, player, player.turns + ' ' + toursWord(player.turns) + ' pour gagner');
         }
 
         ZONES.forEach(function (zone, zoneIndex) {
             zoneBoxes[zoneIndex].addEventListener('click', function (e) {
                 e.stopPropagation();
-                var activeIndex = engine.getActiveIndex();
+                const activeIndex = engine.getActiveIndex();
                 if (!engine.canAct(activeIndex) || owners[zoneIndex] === activeIndex) {
                     return;
                 }
 
-                var player = players[activeIndex];
+                const player = players[activeIndex];
                 engine.recordClick(player);
                 owners[zoneIndex] = activeIndex;
 
@@ -230,12 +226,13 @@ function startOzoneBoard(config) {
     });
 }
 
-var OZONE_VARIANTS = {
+// Variant handling
+const OZONE_VARIANTS = {
     ozone: {threeMonts: false, killianSauveur: false},
     'ozone-3p': {threeMonts: true, killianSauveur: true}
 };
 
-var variantEl = document.querySelector('[data-variant]');
+const variantEl = document.querySelector('[data-variant]');
 if (variantEl) {
     startOzoneBoard(OZONE_VARIANTS[variantEl.dataset.variant]);
 }

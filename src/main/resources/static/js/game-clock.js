@@ -9,37 +9,40 @@
 // game-turn-engine.js (loaded before this file) — this file only owns what's
 // specific to the clock itself: sector order, points, and the expand toggle.
 
-var variantEl = document.querySelector('[data-variant]');
-var variant = variantEl ? variantEl.dataset.variant : null;
+const variantEl = document.querySelector('[data-variant]');
+const variant = variantEl ? variantEl.dataset.variant : null;
 
 document.addEventListener('DOMContentLoaded', function () {
-    var panels = Array.prototype.slice.call(document.querySelectorAll('.clock-panel'));
+    const panels = Array.prototype.slice.call(document.querySelectorAll('.clock-panel'));
     if (!panels.length) {
         return;
     }
 
-    var TARGETS = [];
-    for (var n = 1; n <= 20; n++) {
+    // Populate the array of numbers + bull
+    const TARGETS = [];
+    for (let n = 1; n <= 20; n++) {
         TARGETS.push(String(n));
     }
     TARGETS.push('B');
 
-    var POINTS_TO_VALIDATE;
+    let POINTS_TO_VALIDATE;
 
+    // Define the number of points to validate a number
     if (variant === "fast-clock") {
         POINTS_TO_VALIDATE = 1;
     } else {
         POINTS_TO_VALIDATE = 3;
     }
-    var WINDOW_SIZE = 6;
+    const WINDOW_SIZE = 6;
 
     // One dart always validates the current number in Fast Clock, so there's
     // no partial progress toward 3 points worth showing — the dots only make
     // sense when a number can take more than one hit to validate.
-    var showPoints = POINTS_TO_VALIDATE > 1;
+    const showPoints = POINTS_TO_VALIDATE > 1;
 
-    var players = panels.map(function (panel) {
-        var boxes = {};
+    // Player display information
+    const players = panels.map(function (panel) {
+        const boxes = {};
         TARGETS.forEach(function (target, i) {
             boxes[i] = panel.querySelector('.clock-box[data-index="' + i + '"]');
         });
@@ -60,24 +63,28 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     });
 
+    // Redraw all players' panels from current state
     function render(ctx) {
         players.forEach(function (player, index) {
-            var isFocused = index === ctx.focusedIndex;
+            const isFocused = index === ctx.focusedIndex;
             player.turnsEl.textContent = 'Tours : ' + player.turns;
             player.targetEl.textContent = TARGETS[player.targetIndex] === 'B' ? 'BULLE' : TARGETS[player.targetIndex];
             player.expandBtn.textContent = player.expanded ? 'Réduire' : 'Voir tout';
 
             player.pointsEl.hidden = !showPoints;
+
+            // Progress point for a number
             if (showPoints) {
-                for (var d = 0; d < POINTS_TO_VALIDATE; d++) {
+                for (let d = 0; d < POINTS_TO_VALIDATE; d++) {
                     player.pointDots[d].classList.toggle('filled', d < player.points);
                 }
             }
 
+            // Numbers displaying
             TARGETS.forEach(function (target, i) {
-                var box = player.boxes[i];
-                var isPast = i < player.targetIndex;
-                var isCurrent = i === player.targetIndex;
+                const box = player.boxes[i];
+                const isPast = i < player.targetIndex;
+                const isCurrent = i === player.targetIndex;
 
                 box.classList.toggle('validated', isPast);
                 box.classList.toggle('current', isCurrent);
@@ -94,11 +101,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    var engine = createTurnEngine({
+    // Turn engine and cache saving
+    const engine = createTurnEngine({
         players: players,
+        // Snapshot a player's progress for undo
         captureState: function (player) {
             return {targetIndex: player.targetIndex, points: player.points};
         },
+        // Restore a player's progress from a snapshot
         applyState: function (player, state) {
             player.targetIndex = state.targetIndex;
             player.points = state.points;
@@ -106,19 +116,18 @@ document.addEventListener('DOMContentLoaded', function () {
         render: render
     });
 
+    // Win overlay details
     function populateWinOverlay(overlay, player) {
-        overlay.querySelector('[data-role="winner-detail"]').textContent =
-            player.turns + (player.turns > 1 ? ' tours pour gagner' : ' tour pour gagner');
-        overlay.querySelector('[data-role="winner-input"]').value = player.id;
-        overlay.querySelector('[data-role="result-input"]').value = player.turns;
+        populateWinnerFields(overlay, player, player.turns + ' ' + toursWord(player.turns) + ' pour gagner');
     }
 
+    // Points handling on numbers, winner resolution
     function handleBoxClick(index, playerIndex) {
         if (!engine.canAct(playerIndex)) {
             return;
         }
 
-        var player = players[playerIndex];
+        const player = players[playerIndex];
         if (index !== player.targetIndex) {
             return;
         }

@@ -11,12 +11,19 @@ import java.util.Map;
 public final class Util {
 
 	private Util() {
+		// Utility Constructor should not be instantiated
 	}
 
 	/**
+	 * Compute and update the old / previous best/worst scores to persist them. Based on isBasedOnTurn, compute differs.
+	 * For a turn, lowest is better. For a score, highest is better
+	 * 
 	 * @param stat
+	 *            A user's stat, could be UserGameStats or UserGameSecondaryStats
 	 * @param result
+	 *            The score to register
 	 * @param isBasedOnTurn
+	 *            Boolean information about a game, based on turn or not
 	 */
 	public static void saveScoresToStats(ScoreTrackable stat, Integer result, boolean isBasedOnTurn) {
 		Integer bestScore = stat.getBestScore();
@@ -37,8 +44,9 @@ public final class Util {
 		}
 
 		else { // Else, the new result isn't better than the best score
-			if ((worstScore == null) || isBetter(worstScore, result, isBasedOnTurn)) { // if result is iller than old
-																						// worst score
+			if ((worstScore == null) || isBetter(worstScore, result, isBasedOnTurn)) {
+				// if result is iller than old worst score
+
 				// Update the worst score with result
 				stat.setWorstScore(result);
 			}
@@ -46,10 +54,15 @@ public final class Util {
 	}
 
 	/**
+	 * Small compute to defining what is the best candidates, based on isBasedOnTurn.
+	 *
 	 * @param candidate
+	 *            The value to be compared
 	 * @param reference
+	 *            The reference value
 	 * @param isBasedOnTurn
-	 * @return
+	 *            Boolean information about a game, based on turn or not
+	 * @return A boolean result condition
 	 */
 	// True if candidate is a better result than reference for this game type.
 	private static boolean isBetter(Integer candidate, Integer reference, boolean isBasedOnTurn) {
@@ -60,18 +73,27 @@ public final class Util {
 	}
 
 	/**
+	 * Compute the best score around each player in a game (based on score or turn). Create map User / Game / BestScore
+	 * / WorstScore.
+	 * 
 	 * @param stats
+	 *            All userGameStats existing
 	 * @param statsByUserAndGame
+	 *            An empty map to store UserId, (GameId,UserGameStats score)
 	 * @param bestPerGame
+	 *            An empty map to store the best score by games
 	 */
-	public static void computeScore(List<? extends ScoreTrackable> stats,
+	public static void computeBestScore(List<? extends ScoreTrackable> stats,
 			Map<Integer, Map<Integer, ScoreTrackable>> statsByUserAndGame, Map<Integer, Integer> bestPerGame,
 			boolean forceHigherIsBetter) {
-		for (ScoreTrackable stat : stats) {
+
+		for (ScoreTrackable stat : stats) { // For each stats line in the DB
 
 			Game game = stat.getGame();
 			// create a map with UserId, (GameId,UserGameStats score)
-			statsByUserAndGame.computeIfAbsent(stat.getUser().getId(), id -> new HashMap<>()).put(game.getId(), stat); // populate
+			// populate statsByUserAndGame, if user doesn't exist yet, create a new hashmap with (GameId,UserGameStats
+			// score). Else, it uses the already created hashmap
+			statsByUserAndGame.computeIfAbsent(stat.getUser().getId(), id -> new HashMap<>()).put(game.getId(), stat);
 
 			Integer bestScore = stat.getBestScore(); // In every game, look for the best score registered
 			if (bestScore != null) {

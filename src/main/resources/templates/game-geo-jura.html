@@ -13,17 +13,9 @@
         <section class="player-panel geo-panel" th:each="player, iter : ${players}"
                  th:classappend="${iter.index == 0} ? ' active' : ''"
                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
-            <div class="player-panel-header">
-                <span data-role="turns">Tours : 0</span>
-                <span class="player-name" th:text="${player.username}">Name</span>
-            </div>
+            <div th:replace="~{generic/player-panel-header :: playerPanelHeader('Tours : 0', false)}"></div>
 
             <div class="player-score" data-role="score">0</div>
-
-            <div class="geo-panel-tags">
-                <span class="geo-tag" data-role="name-tag" hidden>Nom trouvé</span>
-                <span class="geo-tag" data-role="map-tag" hidden>Placé</span>
-            </div>
         </section>
     </div>
 
@@ -45,6 +37,7 @@
     <div class="geo-map-toolbar" data-role="map-toolbar" hidden>
         <button type="button" class="keypad-mode-toggle" data-action="zoom-out" title="Zoom arrière">&#8722;</button>
         <button type="button" class="keypad-mode-toggle" data-action="zoom-in" title="Zoom avant">&#43;</button>
+        <button type="button" class="keypad-mode-toggle geo-zoom-paris-btn" data-action="zoom-paris" title="Zoom sur Paris">Paris</button>
     </div>
 
     <div class="geo-map-wrap" data-role="map-wrap" hidden>
@@ -163,29 +156,7 @@
         </div>
         <p class="keypad-breakdown" data-role="segment-breakdown"></p>
 
-        <div class="keypad keypad-segments">
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="1">1</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="2">2</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="3">3</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="4">4</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="5">5</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="6">6</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="7">7</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="8">8</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="9">9</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="10">10</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="11">11</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="12">12</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="13">13</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="14">14</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="15">15</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="16">16</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="17">17</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="18">18</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="19">19</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="20">20</button>
-            <button type="button" class="keypad-btn keypad-btn-segment" data-segment="25">25</button>
-        </div>
+        <div th:replace="~{generic/segment-keypad :: segmentKeypad(null, false)}"></div>
 
         <button type="button" class="btn-block geo-confirm-darts-btn" data-action="confirm-darts">Valider les fléchettes</button>
     </div>

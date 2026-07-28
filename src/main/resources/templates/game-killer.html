@@ -254,10 +254,7 @@
         <section class="player-panel killer-panel" th:each="player, iter : ${players}"
                  th:classappend="${iter.index == 0} ? ' active' : ''"
                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
-            <div class="player-panel-header">
-                <span data-role="turns">Tours : 0</span>
-                <span class="player-name" th:text="${player.username}">Name</span>
-            </div>
+            <div th:replace="~{generic/player-panel-header :: playerPanelHeader('Tours : 0', false)}"></div>
 
             <div class="killer-panel-body">
                 <span class="killer-tag" data-role="killer-tag" hidden>Killer</span>
