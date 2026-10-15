@@ -136,8 +136,15 @@ function startScramBoard(config) {
             });
         }
 
+        const playersStackUi = createPlayersStackController({
+            stackSelector: '[data-role="players-stack"]',
+            panelSelector: '.player-panel'
+        });
+
         // Re-renders names, roles, penalty counts, and box states from current state.
         function render(ctx) {
+            playersStackUi.collapseOnActiveChange(ctx.activeIndex);
+
             stopperNameEl.textContent = currentRound().stopper.map(function (p) {
                 return p.name;
             }).join(' & ');
@@ -165,6 +172,8 @@ function startScramBoard(config) {
                 box.disabled = !(!closed && !ctx.gameOver);
             });
         }
+
+        setupPlayersStackToggle();
 
         const engine = createTurnEngine({
             players: turnOrder,

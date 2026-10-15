@@ -25,10 +25,10 @@
 
     <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
 
-    <div class="players-stack" id="players-stack">
+    <div class="players-stack is-collapsed" id="players-stack" data-role="players-stack">
         <section class="player-panel scram-panel" th:each="player, iter : ${players}"
-                 th:classappend="${iter.index == 0} ? ' active' : ''"
-                 th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
+             th:classappend="${iter.index == 0} ? ' active' : ''"
+             th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
             <div th:replace="~{generic/player-panel-header :: playerPanelHeader('Tours : 0', false)}"></div>
 
             <div class="scram-panel-body">

@@ -3,9 +3,9 @@
 <head th:replace="~{generic/page-head :: pageHead(${game.name} + ' - Custom Dart Games')}"></head>
 <body>
 <main class="game-screen" th:attr="data-variant=${variant}">
-    <div th:replace="~{generic/back-link :: backLink(@{/dart/play}, 'Retour à la sélection du jeu', true)}"></div>
-
-    <h1 class="game-title" th:text="${game.name}">Game</h1>
+        <div th:replace="~{generic/back-link :: backLink(@{/dart/play}, 'Retour à la sélection du jeu', true)}"></div>
+        <h1 class="game-title" th:text="${game.name}">Game</h1>
+    
 
     <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
 

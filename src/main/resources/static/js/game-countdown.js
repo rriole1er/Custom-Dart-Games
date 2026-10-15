@@ -8,9 +8,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const keypadPanel = document.getElementById('keypad-panel');
     const backLink = document.querySelector('[data-role="back-link"]');
+    const gameTitle = document.querySelector('.game-title')
     const gameOverOverlay = document.querySelector('[data-role="game-over"]');
     const inputDisplay = document.querySelector('[data-role="input-display"]');
-    const breakdownDisplay = document.querySelector('[data-role="segment-breakdown"]');
     const keypadTotal = document.querySelector('[data-role="keypad-total"]');
     const keypadZeroRow = document.querySelector('[data-role="keypad-zero-row"]');
     const keypadSegments = document.querySelector('[data-role="keypad-segments"]');
@@ -200,6 +200,8 @@ document.addEventListener('DOMContentLoaded', function () {
             player.panel.classList.toggle('active', index === activeIndex && !gameOver);
             render(player);
         });
+
+        playersCarouselUi.syncActive(activeIndex);
         persist();
     }
 
@@ -210,10 +212,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return a + b;
             }, 0);
             inputDisplay.textContent = String(sum);
-            breakdownDisplay.textContent = segmentTaps.length ? segmentTaps.join(' + ') : '';
         } else {
             inputDisplay.textContent = buffer === '' ? '0' : buffer;
-            breakdownDisplay.textContent = '';
         }
     }
 
@@ -250,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // and saved instead of clearing — clear it explicitly here instead
         // of relying on another renderAll() that never comes.
         persist();
+        gameTitle.hidden = true;
         backLink.hidden = true;
         keypadPanel.hidden = true;
         player.panel.classList.add('winner');
@@ -371,6 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
             keypadPanel.hidden = false;
             gameOverOverlay.hidden = true;
             backLink.hidden = false;
+            gameTitle.hidden = false;
         }
         renderAll();
     });
@@ -385,4 +387,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     restore();
     renderAll();
+});
+
+const playersCarouselUi = createPlayersCarouselController({
+    stackSelector: '[data-role="players-stack"]',
+    panelSelector: '.player-panel',
+    visiblePlayers: 2,
+    autoFollowActive: true,
+    controls: false // swipe only
 });

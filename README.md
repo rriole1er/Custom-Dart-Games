@@ -85,6 +85,12 @@ The app listens on `http://localhost:8080`. Database connection settings are in
 `src/main/resources/application.properties` and match the credentials defined in
 `compose.yaml`, fine for local development, not meant for production use.
 
+Use a cloudflare tunnel to use the app outside temporary:
+
+```bash
+cloudflared tunnel --url http://localhost:8080
+```
+
 ## Database schema
 
 ```mermaid
@@ -155,6 +161,8 @@ Tables are created/updated automatically (`spring.jpa.hibernate.ddl-auto=update`
 - `resources/static/css`, single stylesheet, mobile-first (unprefixed rules are the small-screen baseline, `@media (min-width: 600px)` layers on larger screens).
 
 There is no `src/test` directory yet, no test task to run.
+
+
 
 ## License
 

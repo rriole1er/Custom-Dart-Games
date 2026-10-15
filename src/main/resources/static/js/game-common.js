@@ -160,6 +160,223 @@ function wireSaveAllResults(players, gameOverOverlay, resultOf, extraParams) {
     });
 }
 
+// Helps a game screen with multiple players collapse the player stack when the active player changes. 
+// The stack is expanded/collapsed by clicking on the active player's panel, and is collapsed automatically when the active player changes.
+function createPlayersStackController(options) {
+    const opts = options || {};
+    const stack = document.querySelector(opts.stackSelector || '[data-role="players-stack"]');
+
+    if (!stack) {
+        return {
+            collapse: function () {
+            },
+            collapseOnActiveChange: function () {
+            }
+        };
+    }
+
+    const panelSelector = opts.panelSelector || '.player-panel';
+    const activeSelector = panelSelector + '.active';
+    let lastActiveIndex = null;
+
+    function collapse() {
+        stack.classList.add('is-collapsed');
+        stack.classList.remove('is-expanded');
+    }
+
+    stack.addEventListener('click', function (event) {
+        const activePanel = stack.querySelector(activeSelector);
+        if (!activePanel || !activePanel.contains(event.target)) {
+            return;
+        }
+
+        const expanded = stack.classList.toggle('is-expanded');
+        stack.classList.toggle('is-collapsed', !expanded);
+    });
+
+    return {
+        collapse: collapse,
+        collapseOnActiveChange: function (activeIndex) {
+            if (activeIndex !== lastActiveIndex) {
+                collapse();
+                lastActiveIndex = activeIndex;
+            }
+        }
+    };
+}
+
+// Helps a game screen with multiple players show a carousel of player panels, with optional controls and swipe gestures. 
+// The carousel shows a fixed number of players at a time, and can be navigated with next/prev buttons or by swiping left/right on touch devices. The carousel can also automatically follow the active player if desired.
+function createPlayersCarouselController(options) {
+    const opts = options || {};
+    const stack = document.querySelector(opts.stackSelector || '[data-role="players-stack"]');
+
+    if (!stack) {
+        return {
+            goToPage: function () {},
+            syncActive: function () {},
+            refresh: function () {}
+        };
+    }
+
+    const panelSelector = opts.panelSelector || '.player-panel';
+    const visiblePlayers = Math.max(1, parseInt(opts.visiblePlayers || stack.dataset.visiblePlayers || '2', 10) || 2);
+    const autoFollowActive = opts.autoFollowActive !== false;
+    const swipeThresholdPx = opts.swipeThreshold || 48;
+
+    const panels = Array.prototype.slice.call(stack.querySelectorAll(panelSelector));
+    const pages = [];
+    let page = 0;
+
+    let viewport = null;
+    let track = null;
+
+    let startX = 0;
+    let startY = 0;
+    let deltaX = 0;
+    let dragging = false;
+    let horizontalLock = null;
+
+    function totalPages() {
+        return Math.max(1, Math.ceil(panels.length / visiblePlayers));
+    }
+
+    function clampPage(value) {
+        return Math.max(0, Math.min(value, totalPages() - 1));
+    }
+
+    function buildDom() {
+        stack.classList.add('players-carousel');
+        stack.innerHTML = '';
+
+        viewport = document.createElement('div');
+        viewport.className = 'players-carousel-viewport';
+
+        track = document.createElement('div');
+        track.className = 'players-carousel-track';
+
+        for (let i = 0; i < panels.length; i += visiblePlayers) {
+            const pageEl = document.createElement('div');
+            pageEl.className = 'players-carousel-page';
+
+            panels.slice(i, i + visiblePlayers).forEach(function (panel) {
+                pageEl.appendChild(panel);
+            });
+
+            pages.push(pageEl);
+            track.appendChild(pageEl);
+        }
+
+        viewport.appendChild(track);
+        stack.appendChild(viewport);
+    }
+
+    function viewportWidth() {
+        return viewport ? viewport.clientWidth : 0;
+    }
+
+    function setTranslate(px, withTransition) {
+        if (!track) return;
+        track.style.transition = withTransition ? 'transform 260ms ease' : 'none';
+        track.style.transform = 'translate3d(' + px + 'px, 0, 0)';
+    }
+
+    function pageToTranslate(pageIndex) {
+        return -(clampPage(pageIndex) * viewportWidth());
+    }
+
+    function render(withTransition) {
+        setTranslate(pageToTranslate(page), withTransition !== false);
+    }
+
+    function goToPage(nextPage, withTransition) {
+        page = clampPage(nextPage);
+        render(withTransition !== false);
+    }
+
+    function onTouchStart(e) {
+        if (!e.touches || e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        deltaX = 0;
+        dragging = true;
+        horizontalLock = null;
+        track.style.transition = 'none';
+    }
+
+    function onTouchMove(e) {
+        if (!dragging || !e.touches || e.touches.length !== 1) return;
+
+        const x = e.touches[0].clientX;
+        const y = e.touches[0].clientY;
+        const dx = x - startX;
+        const dy = y - startY;
+
+        if (horizontalLock === null) {
+            if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+            horizontalLock = Math.abs(dx) > Math.abs(dy);
+        }
+
+        if (!horizontalLock) return;
+
+        e.preventDefault();
+        deltaX = dx;
+
+        const base = pageToTranslate(page);
+        setTranslate(base + deltaX, false);
+    }
+
+    function onTouchEnd() {
+        if (!dragging) return;
+        dragging = false;
+
+        if (!horizontalLock) {
+            render(true);
+            return;
+        }
+
+        const w = viewportWidth();
+        const ratio = w ? Math.abs(deltaX) / w : 0;
+        const shouldSwitch = Math.abs(deltaX) > swipeThresholdPx || ratio > 0.2;
+
+        if (shouldSwitch) {
+            if (deltaX < 0) {
+                goToPage(page + 1, true); // swipe left => next
+            } else {
+                goToPage(page - 1, true); // swipe right => prev
+            }
+        } else {
+            render(true);
+        }
+    }
+
+    buildDom();
+
+    viewport.addEventListener('touchstart', onTouchStart, { passive: true });
+    viewport.addEventListener('touchmove', onTouchMove, { passive: false });
+    viewport.addEventListener('touchend', onTouchEnd, { passive: true });
+    viewport.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+    window.addEventListener('resize', function () {
+        render(false);
+    });
+
+    render(false);
+
+    return {
+        goToPage: function (nextPage) {
+            goToPage(nextPage, true);
+        },
+        syncActive: function (activeIndex) {
+            if (!autoFollowActive || typeof activeIndex !== 'number') return;
+            goToPage(Math.floor(activeIndex / visiblePlayers), true);
+        },
+        refresh: function () {
+            render(false);
+        }
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // Arrow back
     const backLink = document.querySelector('[data-role="back-link"]');

@@ -77,6 +77,7 @@ function createTurnEngine(config) {
     }
 
     const backLink = document.querySelector('[data-role="back-link"]');
+    const gameTitle = document.querySelector('.game-title')
     const doneBtn = document.querySelector('[data-action="done"]');
     const undoBtn = document.querySelector('[data-action="undo"]');
     const undoClickBtn = document.querySelector('[data-action="undo-click"]');
@@ -177,6 +178,7 @@ function createTurnEngine(config) {
     function setGameOverUi(isOver) {
         gameOver = isOver;
         backLink.hidden = isOver;
+        gameTitle.hidden = isOver;
         doneBtn.hidden = isOver;
         undoBtn.hidden = isOver;
         undoClickBtn.hidden = isOver;

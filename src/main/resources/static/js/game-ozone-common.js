@@ -58,6 +58,38 @@ function startOzoneBoard(config) {
             };
         });
 
+        const playersStackUi = createPlayersStackController({
+            stackSelector: '[data-role="players-stack"]',
+            panelSelector: '.player-panel'
+        });
+
+        const playersStack = document.querySelector('[data-role="players-stack"]');
+        let lastRenderedActiveIndex = null;
+
+        function collapsePlayersStack() {
+            if (!playersStack) {
+                return;
+            }
+            playersStack.classList.add('is-collapsed');
+            playersStack.classList.remove('is-expanded');
+        }
+
+        function setupPlayersStackToggle() {
+            if (!playersStack) {
+                return;
+            }
+
+            playersStack.addEventListener('click', function (event) {
+                const activePanel = playersStack.querySelector('.player-panel.active');
+                if (!activePanel || !activePanel.contains(event.target)) {
+                    return;
+                }
+
+                const expanded = playersStack.classList.toggle('is-expanded');
+                playersStack.classList.toggle('is-collapsed', !expanded);
+            });
+        }
+
         // Shared, not per-player, and permanent (persists turn to turn).
         // Folded into captureState/applyState below so both undo levels
         // revert it correctly.
@@ -98,8 +130,9 @@ function startOzoneBoard(config) {
             });
         }
 
-        // Redraws player panels, sauveur banner, and zone box states.
         function render(ctx) {
+            playersStackUi.collapseOnActiveChange(ctx.activeIndex);
+
             players.forEach(function (player, index) {
                 player.turnsEl.textContent = 'Tours : ' + player.turns;
                 player.panel.classList.toggle('ozone-eliminated', eliminated[index]);
@@ -126,6 +159,8 @@ function startOzoneBoard(config) {
                 box.disabled = ctx.gameOver || isMine;
             });
         }
+
+        setupPlayersStackToggle();
 
         // Turn engine
         const engine = createTurnEngine({
@@ -236,3 +271,5 @@ const variantEl = document.querySelector('[data-variant]');
 if (variantEl) {
     startOzoneBoard(OZONE_VARIANTS[variantEl.dataset.variant]);
 }
+
+

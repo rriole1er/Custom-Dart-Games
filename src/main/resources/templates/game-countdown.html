@@ -9,8 +9,7 @@
 
     <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
 
-
-    <div class="players-stack" id="players-stack">
+    <div class="players-stack" id="players-stack" data-role="players-stack" data-visible-players="2">
         <section class="player-panel" th:each="player, iter : ${players}"
                  th:classappend="${iter.index == 0} ? ' active' : ''"
                  th:attr="data-player-id=${player.id}, data-player-name=${player.username}">
@@ -33,7 +32,6 @@
 
     <!----------------------------    PLAYER OVERLAY  ------------------------------------------>
 
-
     <div class="keypad-panel" id="keypad-panel">
         <div class="keypad-toolbar">
             <span class="keypad-toolbar-spacer" aria-hidden="true"></span>
@@ -42,7 +40,6 @@
                 &#9678;
             </button>
         </div>
-        <p class="keypad-breakdown" data-role="segment-breakdown"></p>
 
         <!----------------------------    CLASSIC PAD OVERLAY  ------------------------------------------>
 
@@ -66,7 +63,6 @@
 
         <!----------------------------    CLASSIC PAD OVERLAY  ------------------------------------------>
 
-
         <!----------------------------    SEGMENT PAD OVERLAY  ------------------------------------------>
 
         <div th:replace="~{generic/segment-keypad :: segmentKeypad('keypad-segments', true)}"></div>
@@ -76,7 +72,6 @@
         </button>
 
         <!----------------------------    SEGMENT PAD OVERLAY  ------------------------------------------>
-
 
         <div class="keypad-actions">
             <button type="button" class="keypad-btn keypad-btn-danger" data-action="undo">ANNULER</button>
@@ -88,9 +83,7 @@
 
     <div th:replace="~{generic/win-overlay :: winOverlay}"></div>
 
-
     <!----------------------------    WIN OVERLAY  ------------------------------------------>
-
 
     <!----------------------------    EXIT OVERLAY  ----------------------------------------->
 
